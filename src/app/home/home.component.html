@@ -1,0 +1,22 @@
+<top-nav-bar></top-nav-bar>
+<div class="container">
+  <div class="jumbotron text-center">
+    <h1>What is next?</h1>
+    <p class="animated infinite">
+      <predict-button></predict-button>
+    </p>
+    <p>
+      With ♥ thanks to the contributions of
+    </p>
+  </div>
+  <div class="row">
+    <div class="col-sm-4 col-md-4">
+      <!--<ul class="list-group">
+        <li class="list-group-item" ng-repeat="tc in $ctrl.trendCategories">{{tc.text}}</li>
+      </ul>-->
+    </div>
+    <div class="col-sm-8 col-md-8">
+      <prediction-list [source]="predictionList"></prediction-list>
+    </div>
+  </div>
+</div>
