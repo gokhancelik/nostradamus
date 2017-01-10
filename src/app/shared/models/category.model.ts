@@ -3,24 +3,28 @@ export class Category extends BaseModel {
     public static fromJsonList(array): Category[] {
         return array.map(Category.fromJson);
     }
-    public static fromJson({ $key, text, creationDate, creator, creatorDisplayName, creatorEmail,
+    public static fromJson({ $key, text,
+        createdAt, createdBy, modifiedAt, modifiedBy, isDeleted, deletedBy, deletedAt,
         predictionsCount}): Category {
         return new Category(
-            $key, text, creationDate, creator, creatorDisplayName, creatorEmail,
+            $key, text,
+            createdAt, createdBy, modifiedAt, modifiedBy, isDeleted, deletedBy, deletedAt,
             predictionsCount
         );
     }
     constructor(
         id: string = null,
         public text: string = null,
-        public creationDate: Date = new Date(),
-        public creator: string = '',
-        public creatorDisplayName: string = '',
-        public creatorEmail: string = '',
+        createdAt: Date = null,
+        createdBy: string = null,
+        modifiedAt: Date = null,
+        modifiedBy: string = null,
+        isDeleted: boolean = false,
+        deletedBy: string = null,
+        deletedAt: Date = null,
         public predictionsCount: number = 0,
     ) {
-        super();
-        this.id = id;
+        super(id, createdAt, createdBy, modifiedAt, modifiedBy, isDeleted, deletedBy, deletedAt);
     }
 
 }

@@ -1,0 +1,23 @@
+.liked {
+  color: darkred;
+}
+
+.liked:before {
+  font-family: FontAwesome;
+  content: "\f004";
+  font-size: 2em;
+  position: relative;
+  display: inline-block;
+  padding-right: 3px;
+  vertical-align: middle;
+}
+
+.notliked:before {
+  font-family: FontAwesome;
+  content: "\f08a";
+  font-size: 2em;
+  position: relative;
+  display: inline-block;
+  padding-right: 3px;
+  vertical-align: middle;
+}

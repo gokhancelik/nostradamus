@@ -1,3 +1,4 @@
+import { User } from './../shared/models/user.model';
 import { Role } from './../shared/models/role.model';
 import { RoleService } from './../shared/services/role.service';
 import { CurrentUser } from './currentUser.model';
@@ -52,9 +53,20 @@ export class AuthService {
     public signUp(email, password) {
         return this.fromFirebaseAuthPromise(this.auth.createUser({ email, password }));
     }
-    public getUserInfo(): Observable<FirebaseAuthState> {
-        let auth$ = this.auth.take(1);
-        return auth$;
+    getUserInfo(): Observable<User> {
+        let auth$ = this.auth;
+        let usersFirebase$ = auth$.switchMap(value => {
+            if (value)
+                return this.fDb.list('users', {
+                    query: { orderByChild: 'uid', equalTo: value.uid, limitToFirst: 1 }
+                })
+            else {
+                return Observable.of();
+            }
+        });
+        let users$ = usersFirebase$.map(User.fromJsonList);
+        let user$ = users$.map(users => { return users ? users[0] : Observable.of(); })
+        return user$;
     }
     public logout() {
         this.auth.logout();

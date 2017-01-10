@@ -1,27 +1,9 @@
 <div class="row" *ngIf="source">
   <div class="col-xs-12" *ngFor="let prediction of source | async">
-    <div class="card">
-      <div class="card-block">
-        <div class="row">
-          <div class="col-xs-2">
-            <img *ngIf="prediction.userPhotoUrl" width="48" height="48" [src]="prediction.userPhotoUrl" alt="Profile image">
-          </div>
-          <div class="col-xs-10">
-            <h6 class="card-subtitle text-muted">{{prediction.userDisplayName}}</h6>
-            <h4 class="card-title">{{prediction.categoryText}}</h4>
-          </div>
-        </div>
-      </div>
-      <img *ngIf="prediction.imageUrl" [src]="prediction.imageUrl" alt="Card image">
-      <div class="card-block">
-        <p class="card-text">{{prediction.text}}</p>
-        <a href="#" class="card-link">Card link</a>
-        <a href="#" class="card-link">Another link</a>
-        <p class="card-text"><small class="text-muted">Created {{prediction.creationDate| amTimeAgo}}</small></p>
-      </div>
-      <div class="card-footer text-muted">
-        2 days ago
-      </div>
+    <prediction *ngIf="!prediction.challengedPrediction" [prediction]="prediction"></prediction>
+    <div class="card-group" *ngIf="prediction.challengedPrediction">
+      <prediction [prediction]="prediction"></prediction>
+      <prediction [prediction]="(prediction.challengedPredictionObj|async)"></prediction>
     </div>
   </div>
 </div>

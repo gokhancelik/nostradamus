@@ -8,7 +8,6 @@ import { CategoryService } from './../shared/services/category.service';
 import { Observable } from 'rxjs/Rx';
 import { Component, OnInit, ViewChild, Output, EventEmitter, ViewEncapsulation } from '@angular/core';
 import { ModalDirective } from 'ng2-bootstrap/ng2-bootstrap';
-import { DynamicFormService, DynamicFormControlModel } from '@ng2-dynamic-forms/core';
 import { TypeaheadMatch } from 'ng2-bootstrap/ng2-bootstrap';
 import { NgbDateStruct, NgbTimeStruct } from '@ng-bootstrap/ng-bootstrap';
 import { FormControl } from '@angular/forms';
@@ -26,90 +25,58 @@ export class PredictionAddComponent implements OnInit {
     public categoryDataSource: Observable<Category[]>;
     protected formGroup: FormGroup;
     private model: Prediction;
-    private dynamicFormModel: DynamicFormControlModel[];
+    private categoryResult: any;
     private pbDate: NgbDateStruct;
     private pbTime: NgbTimeStruct;
     private pbMinDate: NgbDateStruct
+    private haDate: NgbDateStruct;
+    private haTime: NgbTimeStruct;
     private today: Date = new Date();
+    categories: Category[];
     searching = false;
     searchFailed = false;
 
     search = (text$: Observable<string>) =>
         text$
-            .debounceTime(600)
-            .distinctUntilChanged()
-            .do(() => this.searching = true)
-            .switchMap(term =>
-                this.categoryService.search(term)//.map(d => d.map(p => { return p.text }))
-                    .do(() => this.searchFailed = false)
-                    .catch(() => {
-                        this.searchFailed = true;
-                        return Observable.of([]);
-                    }))
-            .do(() => this.searching = false);
-    formatter = (x: { text: string }) => x.text;
-    constructor(private categoryService: CategoryService, private predictionService: PredictionService,
-        private dynamicFormService: DynamicFormService) {
-
-        //this.setYears();
-
-        // let formCreator = new FormCreator(dynamicFormService);
-        // this.formGroup = formCreator.createForm(PREDICT_FORM_MODEL);
-        // this.dynamicFormModel = formCreator.createFormModel(PREDICT_FORM_MODEL);
-
+            .debounceTime(200)
+            .map(term => term === '' ? []
+                : this.categories.filter(v => new RegExp(term, 'gi').test(v.text)).slice(0, 10));
+    // formatter(x: { text: string }) {
+    //     return x.text || x;
+    // }
+    constructor(private categoryService: CategoryService, private predictionService: PredictionService) {
+        this.categoryService.search().subscribe(
+            data => this.categories = data
+        );
     }
-    // publishYearChanged() {
-    //     let beginMonth = 1;
-    //     if (this.publishYear) {
-    //         if (this.publishYear === this.today.getFullYear()) {
-    //             beginMonth = this.today.getMonth() + 1
-    //         }
-    //         for (let m = beginMonth; m <= 12; m++)
-    //             this.publishMonths.push(m);
-    //     }
-    //     else {
-    //         this.publishMonths = [];
-    //     }
-    // }
-    // publishMonthChanged() {
-    //     let beginDay = 1;
-    //     let endDay = 30;
-    //     if (this.publishMonth) {
-    //         if (this.publishMonth === this.today.getMonth() + 1) {
-    //             beginDay = this.today.getMonth() + 1
-    //         }
-    //         let thatDate = new Date(this.publishYear, this.publishMonth + 1, 0);
-    //         endDay = thatDate.getDate();
-    //         for (let m = beginDay; m <= endDay; m++)
-    //             this.publishDays.push(m);
-    //     }
-    // }
-    // setYears() {
-    //     this.publishYears = Array(20).fill(this.today.getFullYear() - 1).map((x, i) => x + i)
-    // }
     ngOnInit() {
         this.model = new Prediction();
     }
-    publishTimeChanged(event) {
+    publishTimeChanged(event: NgbTimeStruct) {
         this.model.publishDate = new Date(this.pbDate.year, this.pbDate.month, this.pbDate.day, event.hour, event.minute, event.second);
     }
     publishDateChanged(event: NgbDateStruct) {
-        this.model.publishDate = new Date(event.year, event.month, event.day, this.pbTime ? this.pbTime.hour : 0, this.pbTime ? this.pbTime.minute : 0, this.pbTime ? this.pbTime.second : 0);
+        this.model.publishDate = new Date(event.year, event.month - 1, event.day, this.pbTime ? this.pbTime.hour : 0, this.pbTime ? this.pbTime.minute : 0, this.pbTime ? this.pbTime.second : 0);
+    }
+    hideAfterDateChanged(event: NgbDateStruct) {
+        this.model.hideDate = new Date(event.year, event.month - 1, event.day, this.haTime ? this.haTime.hour : 0, this.haTime ? this.haTime.minute : 0, this.haTime ? this.haTime.second : 0);
+    }
+    hideAfterTimeChanged(event: NgbTimeStruct) {
+        this.model.hideDate = new Date(this.haDate.year, this.haDate.month, this.haDate.day, event.hour, event.minute, event.second);
     }
     public show() {
         if (this.formModal) {
             this.today = new Date();
             this.pbMinDate = { day: this.today.getDate(), month: this.today.getMonth() + 1, year: this.today.getFullYear() }
-            this.pbDate = { day: this.today.getDate(), month: this.today.getMonth() + 1, year: this.today.getFullYear() };
-            this.pbTime = { hour: this.today.getHours(), minute: this.today.getMinutes(), second: 0 };
+            this.pbDate = this.haDate = { day: this.today.getDate(), month: this.today.getMonth() + 1, year: this.today.getFullYear() };
+            this.pbTime = this.haTime = { hour: this.today.getHours(), minute: this.today.getMinutes(), second: 0 };
             this.formModal.show();
         }
     }
     public categoryOnSelect($event: TypeaheadMatch) {
-        if (this.model) {
-            this.model.category = $event.item.id;
-            this.model.categoryText = $event.item.text;
-        }
+        // if (this.model) {
+        //     this.model.category = $event.item.id;
+        // }
     }
     public changeTypeaheadLoading(e: boolean): void {
         this.typeaheadLoading = e;
@@ -120,7 +87,21 @@ export class PredictionAddComponent implements OnInit {
     }
 
     public save() {
-        this.predictionService.add(this.model);
+        if (!this.categoryResult) {
+            alert("You should enter a category");
+            return;
+        }
+        if (!(this.model.hideDate.getTime() < this.model.publishDate.getTime())) {
+            alert("Hide date can not be later than publish date");
+            return;
+        }
+        if (this.categoryResult.text) {
+            // this.model.category = this.categoryResult.id;
+            this.predictionService.predict(this.model, this.categoryResult.text);
+        }
+        else {
+            this.predictionService.predict(this.model, this.categoryResult);
+        }
         //if (this.onSaved) this.onSaved.emit(this.model);
         if (this.formModal) this.formModal.hide();
     }

@@ -1,3 +1,5 @@
+import { User } from './../models/user.model';
+import { UserService } from './user.service';
 import { CategoryService } from './category.service';
 import { Category } from './../models/category.model';
 import { AuthService } from './../../security/auth.service';
@@ -10,10 +12,26 @@ import { Observable, Subject } from 'rxjs/Rx';
 export class PredictionService extends BaseFirebaseService<Prediction> {
     constructor(private afAuth: AngularFireAuth,
         private _af: AngularFireDatabase,
-        private authService: AuthService,
+        private _authService: AuthService,
         private categoryService: CategoryService,
+        private userService: UserService,
         @Inject(FirebaseRef) fb) {
-        super(_af, 'predictions', fb);
+        super(_af, 'predictions', fb, _authService);
+    }
+    public mapRelationalObject(obj: Prediction) {
+        let that = this;
+        obj.categoryObj = this.categoryService.getByKey(obj.category);
+        obj.userObj = this.userService.getByKey(obj.user);
+        obj.isLikedByCurrentUser = that.isLikedByCurrentUser(obj);
+        if (obj.challengedPrediction) {
+            obj.challengedPredictionObj = that.getByKey(obj.challengedPrediction);
+            obj.challengedPredictionObj.subscribe(console.log)
+        }
+        // .map(c => { return that.getByKey(c.$value) })
+        // .map(this.fromJson);
+        // this._af.object('challenges/' + obj.id)
+        //     .map(c => { return that.getByKey(c.$value) }).subscribe(c => c.subscribe(console.log));
+        return obj;
     }
     fromJson(obj) {
         return Prediction.fromJson(obj);
@@ -21,35 +39,143 @@ export class PredictionService extends BaseFirebaseService<Prediction> {
     fromJsonList(array) {
         return Prediction.fromJsonList(array);
     }
-    add(value: Prediction) {
-        this.authService.getUserInfo().take(1).subscribe(user => {
+    public isLikedByCurrentUser(prediction: Prediction): Observable<boolean> {
+        //this._af.object(this.getRoute() + '/' + prediction.id + '/likes').subscribe(console.log)
+        const isLikedByCurrentUser$ = this._authService.getUserInfo().take(1).switchMap(user => {
+            if (user)
+                return this._af.object(this.getRoute() + '/' + prediction.id + '/likes/' + user.id).map(
+                    likes => { return likes.$value !== null }
+                )
+            else {
+                return Observable.of(false);
+            }
+        });
+        return isLikedByCurrentUser$;
+
+        // .switchMap(
+        // likes => {
+        //     return this._authService.getUserInfo()
+        //         .map(
+        //         user => {
+        //             return likes[user.id] !== null;
+        //         })
+        // })
+    }
+    public isLikedByUser(prediction: Prediction, user: User): Observable<boolean> {
+        //this._af.object(this.getRoute() + '/' + prediction.id + '/likes').subscribe(console.log)
+        if (user)
+            return this._af.object(this.getRoute() + '/' + prediction.id + '/likes/' + user.id).map(
+                likes => { return likes.$value !== null }
+            )
+        else {
+            return Observable.of(false);
+        }
+    }
+    public getByKey(key): Observable<Prediction> {
+        let that = this;
+        const prediction$ = this._af.object(this.getRoute() + '/' + key)
+            .map(this.fromJson)
+            .map(t => { return that.mapRelationalObject(t); });
+        return prediction$;
+    }
+    public getAll(): Observable<Prediction[]> {
+        let that = this;
+
+        const predicts$ = this._af.list(this.getRoute())
+            .map(that.fromJsonList)
+            .map(predicts => {
+                return predicts.map(t => { return that.mapRelationalObject(t); });
+            });
+
+        return predicts$;
+    }
+    predict(value: Prediction, categoryText: string) {
+        let that = this;
+        value.isChallenge = false;
+        this._authService.getUserInfo().take(1).subscribe(user => {
             if (user) {
-                value.user = user.uid;
-                value.userDisplayName = user.auth.displayName;
-                value.userEmail = user.auth.email;
-                value.userPhotoUrl = user.auth.photoURL;
-                let newPostKey = this._af.list(this.getRoute()).push(null).key;
+                value = super.preparePreCreateByUser(value, user)
+                value.user = user.id;
+                let newPostKey = that._af.list(that.getRoute()).push(null).key;
                 let updates = {};
-                if (!value.category) {
-                    let catKey = this._af.list('categories').push(null).key;
-                    updates['categories/' + catKey] = new Category(
-                        null, value.categoryText, new Date(),
-                        value.user, value.userDisplayName, value.userEmail, 0);
-                    value.category = catKey;
-                }
-                updates[this.getRoute() + '/' + newPostKey] = value;
-                updates['/userPredictions/' + value.user + '/' + newPostKey] = value;
-                updates['/categoryPredictions/' + value.category] = newPostKey;
-                super.firebaseUpdate(updates).subscribe(d => {
-                    this.categoryService.updateCatPredictionCount(value.category);
-                    console.log(d);
-                });
+                that.categoryService.getBytext(categoryText).take(1).subscribe(
+                    cat => {
+                        if (!cat) {
+                            let catKey = that._af.list('categories').push(null).key;
+                            let category = new Category();
+                            category = that.categoryService.preparePreCreateByUser(category, user);
+                            category.text = categoryText;
+                            updates['categories/' + catKey] = category;
+                            value.category = catKey;
+                        } else {
+                            value.category = cat.id;
+                        }
+                        updates[that.getRoute() + '/' + newPostKey] = value;
+                        super.firebaseUpdate(updates);
+                        that.categoryService.updateCatPredictionCount(value.category);
+                    }
+                )
+
+
             }
         });
     }
-    public getAll(): Observable<Prediction[]> {
-        const predictions$ = this._af.list('/predictions')
-            .map(this.fromJsonList);
-        return predictions$;
+    challenge(newPrediction: Prediction, oldPrediction: Prediction) {
+        newPrediction.category = oldPrediction.category;
+        newPrediction.hideDate = oldPrediction.hideDate;
+        newPrediction.publishDate = oldPrediction.publishDate;
+        newPrediction.isChallenge = true;
+        //newPrediction.parentPrediction = oldPrediction;
+        let that = this;
+        this._authService.getUserInfo().take(1).subscribe(user => {
+            if (user) {
+                newPrediction = super.preparePreCreateByUser(newPrediction, user)
+                newPrediction.user = user.id;
+                let newPostKey = that._af.list(that.getRoute()).push(null).key;
+                let updates = {};
+                updates[that.getRoute() + '/' + newPostKey] = newPrediction;
+                //updates[that.getRoute() + '/' + newPostKey + '/parentPrediction'] = oldPrediction;
+                updates[that.getRoute() + '/' + oldPrediction.id + '/challengedPrediction'] = newPostKey;
+                super.firebaseUpdate(updates);
+                that.categoryService.updateCatPredictionCount(newPrediction.category);
+            }
+        });
+    }
+    like(prediction: Prediction) {
+        let that = this;
+        this._authService.getUserInfo().take(1).subscribe(user => {
+            if (user) {
+                that.isLikedByUser(prediction, user).take(1).subscribe(
+                    liked => {
+                        if (!liked) {
+                            let updates = {};
+                            updates[that.getRoute() + '/' + prediction.id + '/likes/' + user.id] = true;
+                            updates['users/' + user.id + '/likedPredictions/' + prediction.id] = true;
+                            super.firebaseUpdate(updates);
+                            that.updateLikeCount(prediction.id, 1);
+                        } else {
+                            let updates = {};
+                            updates[that.getRoute() + '/' + prediction.id + '/likes/' + user.id] = null;
+                            updates['users/' + user.id + '/likedPredictions/' + prediction.id] = null;
+                            super.firebaseUpdate(updates);
+                            that.updateLikeCount(prediction.id, -1);
+                        }
+                    }
+                )
+
+            }
+        });
+    }
+    public updateLikeCount(predictionKey, increment) {
+        this._af.object(this.getRoute() + '/' + predictionKey).$ref//_sdkDb.child('categroies/' + categoryKey)
+            .transaction(function (prediction) {
+                if (prediction) {
+                    prediction.likeCount = prediction.likeCount < 0 ? 0 : prediction.likeCount;
+                    let like = prediction.likeCount = prediction.likeCount + increment;
+                    let priority = prediction.priority || 0;
+                    prediction.priority = priority - (like * 10000);
+                }
+                return prediction;
+            });
     }
 }

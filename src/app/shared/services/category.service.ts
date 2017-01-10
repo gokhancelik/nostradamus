@@ -1,3 +1,4 @@
+import { AuthService } from './../../security/auth.service';
 import { Category } from './../models/category.model';
 import { Prediction } from './../models/prediction.model';
 import { Injectable, Inject } from '@angular/core';
@@ -8,8 +9,8 @@ import { Observable, Subject } from 'rxjs/Rx';
 export class CategoryService extends BaseFirebaseService<Category> {
     constructor(private afAuth: AngularFireAuth,
         private _af: AngularFireDatabase,
-        @Inject(FirebaseRef) fb) {
-        super(_af, 'categories', fb);
+        @Inject(FirebaseRef) fb, private _authService: AuthService) {
+        super(_af, 'categories', fb, _authService);
     }
     public fromJson(obj) {
         return Category.fromJson(obj);
@@ -17,16 +18,20 @@ export class CategoryService extends BaseFirebaseService<Category> {
     public fromJsonList(array) {
         return Category.fromJsonList(array);
     }
-    public search(name): Observable<Category[]> {
-        const cats$ = this._af.list('categories/', {
-            query: {
-                orderByChild: 'text', startAt: name
-            }
-        })
-            .map(this.fromJsonList);
-        return cats$;
+    public search(): Observable<Category[]> {
+        // const cats$ = this._af.list('categories/', {
+        //     query: {
+        //         orderByChild: 'text', startAt: name
+        //     }
+        // })
+        //     .map(this.fromJsonList);
+        return this.getAll();
     }
-
+    getBytext(text): Observable<Category> {
+        return this._af.list(this.getRoute(), { query: { orderByChild: 'text', equalTo: text } })
+            .map(this.fromJsonList)
+            .map(cats => { return cats[0] })
+    }
     /**
         * Should call after prediction added.
         */
@@ -34,7 +39,8 @@ export class CategoryService extends BaseFirebaseService<Category> {
         this._af.object('categories/' + categoryKey).$ref//_sdkDb.child('categroies/' + categoryKey)
             .transaction(function (category) {
                 if (category) {
-                    category.predictionsCount++;
+                    let pred = category.predictionsCount++;
+                    category.priority = category.priority - (pred * 1000)
                 }
                 return category;
             });

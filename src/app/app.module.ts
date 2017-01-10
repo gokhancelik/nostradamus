@@ -1,3 +1,8 @@
+import { ComponentsModule } from './components/components.module';
+import { HomeModule } from './home/home.module';
+import { ProfileModule } from './profile/profile.module';
+import { CategoryModule } from './category/category.module';
+import { CountDownComponent } from './components/countdown.component';
 import { SharedModule } from './shared/shared.module';
 import { PredictionModule } from './prediction/prediction.module';
 import { AuthService } from './security/auth.service';
@@ -28,8 +33,6 @@ import { ROUTES } from './app.routes';
 import { AppComponent } from './app.component';
 import { APP_RESOLVER_PROVIDERS } from './app.resolver';
 import { AppState, InternalStateType } from './app.service';
-import { HomeComponent } from './home';
-import { NavbarComponent } from './navbar';
 import { NoContentComponent } from './no-content';
 import { AngularFireModule, AuthProviders, AuthMethods } from 'angularfire2';
 
@@ -64,9 +67,7 @@ type StoreType = {
   bootstrap: [AppComponent],
   declarations: [
     AppComponent,
-    HomeComponent,
-    NoContentComponent,
-    NavbarComponent
+    NoContentComponent
   ],
   imports: [ // import Angular's modules
     BrowserModule,
@@ -76,10 +77,13 @@ type StoreType = {
     AngularFireModule.initializeApp(FIREBASE_CONFIG, myFirebaseAuthConfig),
     NgbModule.forRoot(),
     LoginModule,
-
+    ProfileModule,
+    HomeModule,
+    ComponentsModule,
     ButtonsModule.forRoot(),
     PredictionModule,
-    SharedModule
+    SharedModule,
+    CategoryModule
   ],
   providers: [ // expose our Services and Providers into Angular's dependency injection
     ENV_PROVIDERS,

@@ -1,3 +1,5 @@
+import { CategoryService } from './../shared/services/category.service';
+import { Category } from './../shared/models/category.model';
 import { Prediction } from './../shared/models/prediction.model';
 import { Observable } from 'rxjs/Rx';
 import { PredictionService } from './../shared/services/prediction.service';
@@ -26,11 +28,13 @@ import { AppState } from '../app.service';
 export class HomeComponent implements OnInit {
   // Set our default values
   public predictionList: Observable<Prediction[]>;
+  public trendCategories: Observable<Category[]>;
   // TypeScript public modifiers
   constructor(
-    public predictionService: PredictionService,
+    public predictionService: PredictionService, private categoryService: CategoryService
   ) {
     this.predictionList = this.predictionService.getAll();
+    this.trendCategories = this.categoryService.getAll();
   }
 
   public ngOnInit() {

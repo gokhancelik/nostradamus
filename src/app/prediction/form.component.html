@@ -9,19 +9,16 @@
       </div>
       <div class="modal-body" *ngIf="model">
         <form (ngSubmit)="save()" #predictionForm="ngForm">
+          <template #rt let-r="result" let-t="term">
+            {{ r.text }}
+            <small class="text-muted">Prediction Count: {{t.predictionsCount}}</small>
+          </template>
           <div class="form-group" [class.has-danger]="searchFailed">
-            <input type="text" class="form-control" (selectItem)="categoryOnSelect($event)" [inputFormatter]="formatter"  [(ngModel)]="model.categoryText" name="category" [ngbTypeahead]="search" placeholder="Wikipedia search" />
+            <input type="text" autocomplete="off" class="form-control" [resultTemplate]="rt" (selectItem)="categoryOnSelect($event)"
+              #categoryInput [(ngModel)]="categoryResult" name="categoryInput" [ngbTypeahead]="search"
+              placeholder="Category search" required/>
             <span *ngIf="searching">searching...</span>
             <div class="form-control-feedback" *ngIf="searchFailed">Sorry, suggestions could not be loaded.</div>
-          </div>
-          <div class="form-group">
-            <label for="category">Category</label>
-            <input id="category" name="category" [(ngModel)]="model.categoryText" [typeahead]="categoryDataSource" (typeaheadLoading)="changeTypeaheadLoading($event)"
-              (typeaheadNoResults)="changeTypeaheadNoResults($event)" (typeaheadOnSelect)="categoryOnSelect($event)" [typeaheadOptionsLimit]="10"
-              [typeaheadOptionField]="'text'" placeholder="Search Categories" class="form-control" #category="ngModel">
-            <div [hidden]="category.valid || category.pristine" class="alert alert-danger">
-              Category is required
-            </div>
           </div>
           <div class="form-group">
             <label for="text">Prediction</label>
@@ -32,55 +29,35 @@
           </div>
           <div class="form-group">
             <label for="publishDate">Publish Time</label>
-            <!--<select name="publishYear" id="inputPublishYear" class="form-control" required [(ngModel)]="publishYear" name="publishYear"
-              (ngModelChange)="publishYearChanged($event)" #publishYear="ngModel">
-               <option value="y" *ngFor="let y of publishYears">
-                  {{y}}
-              </option>
-            </select>-->
             <div class="input-group">
               <input class="form-control" (ngModelChange)="publishDateChanged($event)" [minDate]="pbMinDate" placeholder="yyyy-mm-dd" name="publishDate"
-                [(ngModel)]="pbDate" ngbDatepicker #publishDate="ngbDatepicker">
+                [(ngModel)]="pbDate" ngbDatepicker #publishDate="ngbDatepicker" required/>
               <div class="input-group-addon" (click)="publishDate.toggle()">
-                <i class="fa fa-calender" style="width: 1.2rem; height: 1rem; cursor: pointer;"></i>
+                <i class="fa fa-calendar" aria-hidden="true"></i>
               </div>
             </div>
+          </div>
+          <div class="form-group">
             <div class="input-group">
-              <ngb-timepicker [(ngModel)]="pbTime" (ngModelChange)="publishTimeChanged($event)" [seconds]="false" name="publishDate"></ngb-timepicker>
-            </div>
-            <!--<select name="publishMonth" id="inputPublishMonth" class="form-control">
-              <option value="m" *ngFor="let m of publishMonths" required
-                [(ngModel)]="publishMonth" name="publishMonth" (ngModelChange)="publishMonthChanged($event)"
-                #publishMonth="ngModel">
-                {{m}}
-              </option>
-            </select>
-            <select name="publishDay" id="inputPublishDay" class="form-control">
-              <option value="d" *ngFor="let d of publishDays" required
-                [(ngModel)]="publishDay" name="publishDay"
-                #publishDay="ngModel">
-                {{d}}
-              </option>
-            </select>-->
-            <!--<select name="publishYear" id="inputPublishYear" class="form-control">
-              <option value="year" *ngFor="let year of years" required
-                [(ngModel)]="publishYear" name="publishYear"
-                #publishYear="ngModel">
-                {{year}}
-              </option>
-            </select>
-            <select name="publishYear" id="inputPublishYear" class="form-control">
-              <option value="year" *ngFor="let year of years" required
-                [(ngModel)]="publishYear" name="publishYear"
-                #publishYear="ngModel">
-                {{year}}
-              </option>
-            </select>-->
-            <div [hidden]="text.valid || text.pristine" class="alert alert-danger">
-              Prediction is required
+              <ngb-timepicker [(ngModel)]="pbTime" (ngModelChange)="publishTimeChanged($event)" [seconds]="false" name="publishTime"></ngb-timepicker>
             </div>
           </div>
-          <button type="submit" class="btn btn-default" [disabled]="!predictionForm.form.valid">Submit</button>
+          <div class="form-group">
+            <label for="hideAfterDate">Hide After</label>
+            <div class="input-group">
+              <input class="form-control" (ngModelChange)="hideAfterDateChanged($event)" [minDate]="pbMinDate" [maxDate]="pbDate" placeholder="yyyy-mm-dd"
+                name="hideAfterDate" [(ngModel)]="haDate" ngbDatepicker #hideAfterDate="ngbDatepicker" required/>
+              <div class="input-group-addon" (click)="hideAfterDate.toggle()">
+                <i class="fa fa-calendar" aria-hidden="true"></i>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="input-group">
+              <ngb-timepicker [(ngModel)]="haTime" (ngModelChange)="hideAfterTimeChanged($event)" [seconds]="false" name="hideAfterTime"></ngb-timepicker>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-default" [disabled]="!predictionForm.form.valid">Predict</button>
         </form>
       </div>
       <div class="modal-footer">

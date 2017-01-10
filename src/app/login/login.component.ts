@@ -1,14 +1,15 @@
+import { User } from './../shared/models/user.model';
+import { UserService } from './../shared/services/user.service';
 import { AuthService } from './../security/auth.service';
 import { Component, ViewEncapsulation } from '@angular/core';
 import { FormGroup, AbstractControl, FormBuilder, Validators } from '@angular/forms';
 import { AngularFire, AuthProviders, AuthMethods, FirebaseAuthState } from 'angularfire2';
 import { Router } from '@angular/router';
-import { User } from '../../shared/models';
 @Component({
   selector: 'login',
   encapsulation: ViewEncapsulation.None,
   template: require('./login.html'),
-  styleUrls:['login.css']
+  styleUrls: ['login.css']
 })
 export class Login {
 
@@ -17,7 +18,7 @@ export class Login {
   public password: AbstractControl;
   public submitted: boolean = false;
 
-  constructor(fb: FormBuilder, public authService: AuthService, private router: Router) {
+  constructor(fb: FormBuilder, public authService: AuthService, private router: Router, private userService: UserService) {
     this.form = fb.group({
       'email': ['', Validators.compose([Validators.required, Validators.minLength(4)])],
       'password': ['', Validators.compose([Validators.required, Validators.minLength(4)])]
@@ -57,6 +58,11 @@ export class Login {
     });
   }
   loginSuccess(d: FirebaseAuthState, that: Login) {
-    that.router.navigate(['/home']);
+    that.userService.getByUid(d.uid).take(1).subscribe(users => {
+      if (users && users.length === 0) {
+        let user: User = new User(null, d.auth.displayName, null, d.auth.email, d.auth.email, d.uid, d.auth.photoURL);
+        that.userService.add(user);
+      }
+    });
   }
 }
