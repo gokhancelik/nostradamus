@@ -178,4 +178,14 @@ export class PredictionService extends BaseFirebaseService<Prediction> {
                 return prediction;
             });
     }
+    public getUserPredictions(uid: string): Observable<Prediction[]> {
+        let that = this;
+        const predicts$ = this._af.list(this.getRoute(), { query: { orderByChild: 'createdBy', equalTo: uid } })
+            .map(that.fromJsonList)
+            .map(predicts => {
+                return predicts.map(t => { return that.mapRelationalObject(t); });
+            });
+
+        return predicts$;
+    }
 }

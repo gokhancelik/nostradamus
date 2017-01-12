@@ -36,7 +36,7 @@ export class User extends BaseModel {
             }
         };
     }
-    static fromJson({ $key, name, phone, userName, email, uid, photoUrl, userObj }): User {
+    static fromJson({ $key, name, phone, userName, email, uid ,photoUrl, userObj }): User {
         return new User(
             $key, name, phone, userName, email, uid, photoUrl, userObj);
     }

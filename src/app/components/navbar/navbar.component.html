@@ -58,9 +58,6 @@
           <a class="nav-link" routerLink="/home"  >Home </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" *ngIf="(this.af.auth | async)" href="#">Profile</a>
-        </li>
-        <li class="nav-item">
           <a class="nav-link" href="#">Pricing</a>
         </li>
         <li class="nav-item">
@@ -70,7 +67,7 @@
       <ul class="nav navbar-nav float-xs-right">
         <li class="nav-item" routerLinkActive="active">
           <a class="nav-link" *ngIf="!(this.af.auth | async)" routerLink="/login">Login</a>
-          <a class="nav-link" *ngIf="(this.af.auth | async)"  [routerLink]="['/profile',{id:(this.af.auth | async)?.uid}]">{{(this.af.auth | async)?.auth.displayName}}</a>
+          <a class="nav-link" *ngIf="(this.af.auth | async)" routerLink="{{'/profile/' + (af.auth | async)?.uid}}">{{(this.af.auth | async)?.auth.displayName}}</a>
         </li>
         <li class="nav-item"  routerLinkActive="active">
           <a class="nav-link" *ngIf="(this.af.auth | async)" href="javascript:void(0);" (click)="logout()">Logout</a>

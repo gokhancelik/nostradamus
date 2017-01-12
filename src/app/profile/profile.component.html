@@ -1,9 +1,64 @@
+<style>
+  .center-block {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+ }
+</style>
 <top-nav-bar></top-nav-bar>
+
 <div class="container">
   <div class="row">
-    <div class="col-sm-4">
+    <div class="col-sm-12 col-md-12 col-lg-4">
+      <div class="card">
+
+        <div class="card-block">
+          <div class="row">
+            <div class="col-sm-12 col-md-12 col-lg-4">
+              <img class="card-img-top center-block" [src]="user?.photoUrl" width="60" height="60" alt="">
+            </div>
+            <div class="col-sm-12 col-md-12 col-lg-8">
+              <h4 class="card-title">{{user?.name}}</h4>
+              <small class="card-text text-muted">{{user?.email}}</small>
+            </div>
+
+          </div>
+          <div>
+            <pre>
+                {{firebaseUser|json}}
+              </pre>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="col-sm-8">
+    <div class="col-sm-12 col-md-12 col-lg-8">
+      <ngb-tabset type="tabs">
+        <ngb-tab title="Predictions">
+          <template ngbTabContent>
+            <prediction-list *ngIf="user?.uid" [source]="predictions"></prediction-list>
+          </template>
+        </ngb-tab>
+        <ngb-tab title="Likes">
+          <template ngbTabContent>
+            <p>Likes</p>
+          </template>
+        </ngb-tab>
+        <ngb-tab title="Followings">
+          <template ngbTabContent>
+            <p>Followings</p>
+          </template>
+        </ngb-tab>
+        <ngb-tab title="Followers">
+          <template ngbTabContent>
+            <p>Followers</p>
+          </template>
+        </ngb-tab>
+        <ngb-tab title="Categories">
+          <template ngbTabContent>
+            <p>Categories</p>
+          </template>
+        </ngb-tab>
+      </ngb-tabset>
     </div>
   </div>
 </div>

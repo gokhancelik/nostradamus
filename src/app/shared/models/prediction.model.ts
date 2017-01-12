@@ -10,6 +10,9 @@ export class Prediction extends BaseModel {
     public get isHidden(): boolean {
         return this.hideDate < new Date() && this.publishDate > new Date()
     }
+    public get isPublished(): boolean {
+        return this.publishDate < new Date()
+    }
     public static fromJson({
         $key, text, publishDate, hideDate,
         category, categoryObj, imageUrl, likeCount, isChallenge,
@@ -20,7 +23,7 @@ export class Prediction extends BaseModel {
     }, isFirst = true): Prediction {
         return new Prediction(
             $key, text, new Date(publishDate), new Date(hideDate),
-            category, categoryObj, imageUrl, likeCount, isChallenge,
+            category, categoryObj, likeCount, imageUrl, isChallenge,
             user, userObj,
             challengedPrediction,
             challengedPredictionObj,

@@ -58,8 +58,8 @@ export class Login {
     });
   }
   loginSuccess(d: FirebaseAuthState, that: Login) {
-    that.userService.getByUid(d.uid).take(1).subscribe(users => {
-      if (users && users.length === 0) {
+    that.userService.getByUid(d.uid).take(1).subscribe(user => {
+      if (user) {
         let user: User = new User(null, d.auth.displayName, null, d.auth.email, d.auth.email, d.uid, d.auth.photoURL);
         that.userService.add(user);
       }

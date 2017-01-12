@@ -11,6 +11,7 @@ export class UserService extends BaseFirebaseService<User> {
         @Inject(FirebaseRef) fb, private _authService: AuthService) {
         super(_af, 'users', fb, _authService);
     }
+    
     public fromJson(obj) {
         return User.fromJson(obj);
     }
@@ -21,9 +22,10 @@ export class UserService extends BaseFirebaseService<User> {
         let that = this;
         that._af.list(that.getRoute()).push(value);
     }
-    public getByUid(uid): Observable<User[]> {
-        let user$ = this._af.list(this.getRoute(), { query: { orderByChild: 'uid', equalTo: uid } })
-            .map(this.fromJsonList);
-        return user$
+    public getByUid(uid): Observable<User> {
+        let user$ = this._af.list(this.getRoute(), { query: { orderByChild: 'uid', equalTo: uid, limitToLast: 1 } })
+            .map(users => users[0])
+        user$.subscribe(console.log);
+        return user$.map(this.fromJson);
     }
 }
