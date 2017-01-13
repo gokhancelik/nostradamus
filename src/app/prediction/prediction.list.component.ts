@@ -12,10 +12,8 @@ export class PredictionListComponent implements OnInit, OnChanges {
     constructor() { }
 
     ngOnInit() {
-
     }
-    ngOnChanges(changes)
-    {
+    ngOnChanges(changes) {
 
     }
 }

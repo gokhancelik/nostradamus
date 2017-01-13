@@ -32,15 +32,17 @@
       </div>
     </div>
     <div class="col-sm-12 col-md-12 col-lg-8">
-      <ngb-tabset type="tabs">
+      <ngb-tabset type="pills">
         <ngb-tab title="Predictions">
           <template ngbTabContent>
-            <prediction-list *ngIf="user?.uid" [source]="predictions"></prediction-list>
+            <hr>
+            <prediction-list *ngIf="predictions" [source]="predictions"></prediction-list>
           </template>
         </ngb-tab>
         <ngb-tab title="Likes">
           <template ngbTabContent>
-            <p>Likes</p>
+            <hr>
+            <prediction-list *ngIf="predictions" [source]="likedPredictions"></prediction-list>
           </template>
         </ngb-tab>
         <ngb-tab title="Followings">

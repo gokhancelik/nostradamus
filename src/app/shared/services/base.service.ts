@@ -13,7 +13,7 @@ export abstract class BaseFirebaseService<T extends BaseModel> implements IServi
         this._sdkDb = _fb ? _fb.database().ref() : null;
     }
     getAll(): Observable<T[]> {
-        return this.af.list(this._route, { query: { orderByChild: 'priority'} })
+        return this.af.list(this._route, { query: { orderByChild: 'priority' } })
             .map(this.fromJsonList);
     }
     public getRoute(): string {
@@ -21,6 +21,9 @@ export abstract class BaseFirebaseService<T extends BaseModel> implements IServi
     }
     public setRoute(value) {
         this._route = value;
+    }
+    public get Route(): string {
+        return this._route;
     }
     getByKey(key: string): Observable<T> {
         return this.af.object(this._route + '/' + key)
@@ -143,7 +146,7 @@ export abstract class BaseFirebaseService<T extends BaseModel> implements IServi
         value.modifiedAt = new Date();
         value.createdBy = user.email;
         value.modifiedBy = user.email;
-        value.priority =  (value.createdAt.getTime() * -1)
+        value.priority = (value.createdAt.getTime() * -1)
         let nd = this.mapObjectToFirebaseObject(value);
         return nd;
     }

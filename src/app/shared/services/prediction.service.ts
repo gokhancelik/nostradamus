@@ -25,12 +25,7 @@ export class PredictionService extends BaseFirebaseService<Prediction> {
         obj.isLikedByCurrentUser = that.isLikedByCurrentUser(obj);
         if (obj.challengedPrediction) {
             obj.challengedPredictionObj = that.getByKey(obj.challengedPrediction);
-            obj.challengedPredictionObj.subscribe(console.log)
         }
-        // .map(c => { return that.getByKey(c.$value) })
-        // .map(this.fromJson);
-        // this._af.object('challenges/' + obj.id)
-        //     .map(c => { return that.getByKey(c.$value) }).subscribe(c => c.subscribe(console.log));
         return obj;
     }
     fromJson(obj) {
@@ -40,7 +35,6 @@ export class PredictionService extends BaseFirebaseService<Prediction> {
         return Prediction.fromJsonList(array);
     }
     public isLikedByCurrentUser(prediction: Prediction): Observable<boolean> {
-        //this._af.object(this.getRoute() + '/' + prediction.id + '/likes').subscribe(console.log)
         const isLikedByCurrentUser$ = this._authService.getUserInfo().take(1).switchMap(user => {
             if (user)
                 return this._af.object(this.getRoute() + '/' + prediction.id + '/likes/' + user.id).map(
@@ -51,18 +45,8 @@ export class PredictionService extends BaseFirebaseService<Prediction> {
             }
         });
         return isLikedByCurrentUser$;
-
-        // .switchMap(
-        // likes => {
-        //     return this._authService.getUserInfo()
-        //         .map(
-        //         user => {
-        //             return likes[user.id] !== null;
-        //         })
-        // })
     }
     public isLikedByUser(prediction: Prediction, user: User): Observable<boolean> {
-        //this._af.object(this.getRoute() + '/' + prediction.id + '/likes').subscribe(console.log)
         if (user)
             return this._af.object(this.getRoute() + '/' + prediction.id + '/likes/' + user.id).map(
                 likes => { return likes.$value !== null }
@@ -178,14 +162,29 @@ export class PredictionService extends BaseFirebaseService<Prediction> {
                 return prediction;
             });
     }
-    public getUserPredictions(uid: string): Observable<Prediction[]> {
+    public getUserPredictions(userKey: string): Observable<Prediction[]> {
         let that = this;
-        const predicts$ = this._af.list(this.getRoute(), { query: { orderByChild: 'createdBy', equalTo: uid } })
+        const predicts$ = this._af.list(this.getRoute(), { query: { orderByChild: 'user', equalTo: userKey } })
             .map(that.fromJsonList)
             .map(predicts => {
                 return predicts.map(t => { return that.mapRelationalObject(t); });
             });
 
+        return predicts$;
+    }
+    public getUserLikedPredictions(userKey: string): any {
+        let that = this;
+        const predicts$ = this._af.list('users/' + userKey + '/likedPredictions')
+            .map((predictionKeys) => predictionKeys
+                .map((predictionKey) => {
+                    return that._af.object(`${this.Route}/${predictionKey.$key}`)
+                }))
+            .flatMap((res) => {
+                return Observable.combineLatest(res);
+            }).map(this.fromJsonList)
+            .map(predicts => {
+                return predicts.map(t => { return that.mapRelationalObject(t); });
+            });
         return predicts$;
     }
 }

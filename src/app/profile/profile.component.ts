@@ -4,18 +4,20 @@ import { Observable } from 'rxjs/Rx';
 import { AuthService } from './../security/auth.service';
 import { User } from './../shared/models/user.model';
 import { UserService } from './../shared/services/user.service';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute, Params } from '@angular/router';
 import {
     FirebaseAuth, FirebaseAuthState
 } from 'angularfire2/index';
 @Component({
     selector: 'profile',
-    templateUrl: 'profile.component.html'
+    templateUrl: 'profile.component.html',
+    encapsulation: ViewEncapsulation.None,
+
 })
 export class ProfileComponent implements OnInit {
-    public predictions: Observable<Prediction[]>;
-
+    predictions: Observable<Prediction[]>;
+    likedPredictions: Observable<Prediction[]>;
     user: User;
     currentUser: User;
     firebaseUser: firebase.User
@@ -24,22 +26,24 @@ export class ProfileComponent implements OnInit {
     }
 
     ngOnInit() {
-        this.authService.getUserInfo().subscribe(
-            data => this.currentUser = data
+        let that = this;
+        that.authService.getUserInfo().subscribe(
+            data => that.currentUser = data
         );
-        this.auth.take(1).subscribe(d =>
-            this.firebaseUser = d.auth
+        that.auth.take(1).subscribe(d =>
+            that.firebaseUser = d.auth
         )
-        this.activatedRoute.params.forEach((params: Params) => {
+        that.activatedRoute.params.forEach((params: Params) => {
             if (params['id'])
-                this.userService.getByUid(params['id']).subscribe(
+                that.userService.getByUid(params['id']).subscribe(
                     data => {
-                        this.user = data
-                        this.predictions = this.predictionService.getUserPredictions(this.user.uid);
+                        that.user = data
+                        that.predictions = that.predictionService.getUserPredictions(that.user.id);
+                        that.likedPredictions = that.predictionService.getUserLikedPredictions(that.user.id);
                     }
                 );
             else {
-                this.user = this.currentUser;
+                that.user = that.currentUser;
             }
 
         });

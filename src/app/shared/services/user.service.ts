@@ -11,7 +11,7 @@ export class UserService extends BaseFirebaseService<User> {
         @Inject(FirebaseRef) fb, private _authService: AuthService) {
         super(_af, 'users', fb, _authService);
     }
-    
+
     public fromJson(obj) {
         return User.fromJson(obj);
     }
@@ -25,7 +25,56 @@ export class UserService extends BaseFirebaseService<User> {
     public getByUid(uid): Observable<User> {
         let user$ = this._af.list(this.getRoute(), { query: { orderByChild: 'uid', equalTo: uid, limitToLast: 1 } })
             .map(users => users[0])
-        user$.subscribe(console.log);
         return user$.map(this.fromJson);
+    }
+    public follow(uid: string) {
+        let that = this;
+        this._authService.getUserInfo().take(1).subscribe(user => {
+            if (user) {
+                let updates = {};
+                updates[`${that.Route}/${uid}/followers/${user.id}`] = true;
+                updates[`${that.Route}/${user.id}/following/${uid}`] = true;
+                super.firebaseUpdate(updates);
+                that.updateFollowerCount(user.id, 1);
+                that.updateFollowingCount(uid, 1);
+            }
+        });
+    }
+    public unFollow(uid: string) {
+        let that = this;
+        this._authService.getUserInfo().take(1).subscribe(user => {
+            if (user) {
+                let updates = {};
+                updates[`${that.Route}/${uid}/followers/${user.id}`] = null;
+                updates[`${that.Route}/${user.id}/following/${uid}`] = null;
+                super.firebaseUpdate(updates);
+                that.updateFollowerCount(user.id, -1);
+                that.updateFollowingCount(uid, -1);
+            }
+        });
+    }
+    updateFollowerCount(uid: string, increment: number) {
+        this._af.object(`${this.Route}/${uid}`).$ref//_sdkDb.child('categroies/' + categoryKey)
+            .transaction(function (user) {
+                if (user) {
+                    user.followerCount = user.followerCount < 0 ? 0 : user.followerCount;
+                    // let followerCount = user.followerCount = user.followerCount + increment;
+                    // let priority = user.priority || 0;
+                    // user.priority = priority - (followerCount * 10000);
+                }
+                return user;
+            });
+    }
+    updateFollowingCount(uid: string, increment: number) {
+        this._af.object(`${this.Route}/${uid}`).$ref//_sdkDb.child('categroies/' + categoryKey)
+            .transaction(function (user) {
+                if (user) {
+                    user.followingCount = user.followingCount < 0 ? 0 : user.followingCount;
+                    // let followingCount = user.followingCount = user.followingCount + increment;
+                    // let priority = user.priority || 0;
+                    // user.priority = priority - (followingCount * 10000);
+                }
+                return user;
+            });
     }
 }

@@ -10,7 +10,7 @@ export class NavbarComponent implements OnInit {
 
     ngOnInit() {
         this.af.auth.subscribe(
-            a => console.log(a)
+            // a => console.log(a)
         )
     }
     logout() {
