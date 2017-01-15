@@ -43,6 +43,20 @@ export class CategoryService extends BaseFirebaseService<Category> {
                     category.priority = category.priority - (pred * 1000)
                 }
                 return category;
-            });
+            }, function (error, committed, snapshot) {
+                if (error) {
+                    console.log("error in transaction");
+                } else if (!committed) {
+                    console.log("transaction not committed");
+                } else {
+                    console.log("Transaction Committed");
+                }
+            }, true);
+    }
+    public getUserCategories(userEmail: string): Observable<Category[]> {
+        let that = this;
+        const cats$ = this._af.list(this.getRoute(), { query: { orderByChild: 'createdBy', equalTo: userEmail } })
+            .map(that.fromJsonList)
+        return cats$;
     }
 }

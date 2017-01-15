@@ -9,9 +9,14 @@ import { Component, OnInit, ViewEncapsulation, Input, OnChanges } from '@angular
 })
 export class PredictionListComponent implements OnInit, OnChanges {
     @Input() source: Observable<Prediction[]>;
-    constructor() { }
+    @Input() predictionList: Prediction[];
+    constructor() {
+
+    }
 
     ngOnInit() {
+        let that = this;
+        that.source.subscribe(data => that.predictionList = data);
     }
     ngOnChanges(changes) {
 

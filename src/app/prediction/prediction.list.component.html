@@ -1,9 +1,6 @@
 <div class="row" *ngIf="source">
-  <div class="col-xs-12" *ngFor="let prediction of source | async">
-    <prediction *ngIf="!prediction.challengedPrediction" [prediction]="prediction"></prediction>
-    <div class="card-group" *ngIf="prediction.challengedPrediction">
-      <prediction [prediction]="prediction"></prediction>
-      <prediction [prediction]="(prediction.challengedPredictionObj|async)"></prediction>
-    </div>
+  <div class="col-xs-12" *ngFor="let prediction of predictionList">
+    <prediction [prediction]="prediction"></prediction>
+   
   </div>
 </div>

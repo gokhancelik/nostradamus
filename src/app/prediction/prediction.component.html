@@ -1,52 +1,54 @@
-<div class="card">
-  <div class="card-block">
-    <div class="row">
-      <div [ngClass]="(prediction.challengedPrediction || prediction.isChallenge)?'col-xs-2':'col-xs-1'">
-        <img *ngIf="(prediction.userObj | async)?.photoUrl" width="48" height="48" [src]="(prediction.userObj | async)?.photoUrl"
-          alt="Profile image">
-      </div>
-      <div class="col-xs-10">
-        <a href="javascript:void(0);">
-          <h6 class="card-subtitle text-muted" routerLink="{{'/profile/' + (prediction.userObj | async)?.uid}}">{{(prediction.userObj | async)?.name}}</h6>
-        </a>
-        <h4 class="card-title">{{(prediction.categoryObj | async)?.text}}</h4>
-      </div>
-      <div class="col-xs-1" *ngIf="(prediction.challengedPrediction || prediction.isChallenge)">
-      </div>
+<div [ngClass]="{'card-group': prediction.challengedPrediction}">
+  <div class="card">
+    <div class="card-block">
+      <user-small-card [source]="prediction.userObj"></user-small-card>
     </div>
-  </div>
-  <img *ngIf="prediction.imageUrl" [src]="prediction.imageUrl" alt="Card image">
-  <div class="card-block">
-    <p class="card-text" *ngIf="!prediction.isHidden">{{prediction.text}}</p>
-    <p class="card-text" *ngIf="prediction.isHidden">This prediction is hidden. It will be visible in
-      <count-down [inputDate]="prediction.publishDate"></count-down>
-    </p>
-    <span class="btn"><i class="" (click)="like()"
-     [ngClass]="(prediction.isLikedByCurrentUser | async) ?'liked':'notliked'" 
-     aria-hidden="true"></i> 
-    </span>
-    <span class="badge badge-pill badge-default" *ngIf="prediction.likeCount>0"><a href="javascript:void(0)">{{prediction.likeCount}}</a></span>
-    <span class="btn" (click)="challenge()" *ngIf="!(prediction.challengedPrediction || prediction.isChallenge)"><i class="fa fa-random fa-2x" aria-hidden="true"></i></span>
-    <challenge #challengeModal [prediction]="prediction" *ngIf="!(prediction.challengedPrediction || prediction.isChallenge)"></challenge>
-    <span class="btn float-xs-right"><i class="fa fa-facebook fa-2x" aria-hidden="true"></i></span>
-    <p class="card-text"><small class="text-muted">Created {{prediction.createdAt| amTimeAgo}}</small></p>
-  </div>
-  <div class="card-footer text-muted" *ngIf="!prediction.isPublished">
-    <div class="row">
-      <div [ngClass]="(prediction.challengedPrediction || prediction.isChallenge)?'col-xs-4':'col-xs-3'">
-        <small>Come true in </small>
-      </div>
-      <div [ngClass]="(prediction.challengedPrediction || prediction.isChallenge)?'col-xs-8':'col-xs-9'">
+    <img *ngIf="prediction.imageUrl" [src]="prediction.imageUrl" alt="Card image">
+    <div class="card-block">
+      <h4 class="card-title">{{(prediction.categoryObj | async)?.text}}</h4>
+      <p class="card-text" *ngIf="!prediction.isHidden">{{prediction.text}}</p>
+      <p class="card-text" *ngIf="prediction.isHidden">This prediction is hidden. It will be visible in
         <count-down [inputDate]="prediction.publishDate"></count-down>
+      </p>
+      <span class="btn"><span class="" (click)="like()"
+     [ngClass]="(prediction.isLikedByCurrentUser | async) ?'liked':'notliked'" 
+     aria-hidden="true"></span> 
+    </span>
+      <span class="badge badge-pill badge-default" *ngIf="prediction.likeCount>0"><a href="javascript:void(0)">{{prediction.likeCount}}</a></span>
+      <span class="btn" (click)="challenge()" *ngIf="!(prediction.challengedPrediction || prediction.isChallenge)"><i class="fa fa-random fa-2x" aria-hidden="true"></i></span>
+      <challenge #challengeModal [prediction]="prediction" *ngIf="!(prediction.challengedPrediction || prediction.isChallenge)"></challenge>
+      <span class="btn float-xs-right"><i class="fa fa-facebook fa-2x" aria-hidden="true"></i></span>
+      <p class="card-text"><small class="text-muted">Created {{prediction.createdAt| amTimeAgo}}</small></p>
+    </div>
+    <div class="card-footer text-muted" *ngIf="!prediction.isPublished">
+      <div class="row">
+        <div [ngClass]="(prediction.challengedPrediction || prediction.isChallenge)?'col-xs-4':'col-xs-3'">
+          <small>Come true in </small>
+        </div>
+        <div [ngClass]="(prediction.challengedPrediction || prediction.isChallenge)?'col-xs-8':'col-xs-9'">
+          <count-down [inputDate]="prediction.publishDate"></count-down>
+        </div>
+      </div>
+      <div class="row" *ngIf="!prediction.isHidden">
+        <div [ngClass]="(prediction.challengedPrediction || prediction.isChallenge)?'col-xs-4':'col-xs-3'">
+          <small>Hidden in </small>
+        </div>
+        <div [ngClass]="(prediction.challengedPrediction || prediction.isChallenge)?'col-xs-8':'col-xs-9'">
+          <count-down [inputDate]="prediction.hideDate"></count-down>
+        </div>
       </div>
     </div>
-    <div class="row" *ngIf="!prediction.isHidden">
-      <div [ngClass]="(prediction.challengedPrediction || prediction.isChallenge)?'col-xs-4':'col-xs-3'">
-        <small>Hidden in </small>
-      </div>
-      <div [ngClass]="(prediction.challengedPrediction || prediction.isChallenge)?'col-xs-8':'col-xs-9'">
-        <count-down [inputDate]="prediction.hideDate"></count-down>
-      </div>
+    <div class="card-footer text-muted" *ngIf="prediction.isPublished">
+      <!--<template #t let-fill="fill">
+      <span *ngIf="fill === 100" class="star full"><i class="fa fa-thumbs-o-up" aria-hidden="true"></i> </span>
+      <span *ngIf="fill === 0" class="star"><i class="fa fa-thumbs-o-up" aria-hidden="true"></i></span>
+      <span *ngIf="fill < 100 && fill > 0" class="star">
+    <span class="half" [style.width.%]="fill"><i class="fa fa-thumbs-o-up" aria-hidden="true"></i></span><i class="fa fa-thumbs-o-up" aria-hidden="true"></i>
+      </span>
+    </template>
+    <ngb-rating [rate]="prediction.rate" (rateChange)="rateChanged($event)" [starTemplate]="t" max="5"></ngb-rating>-->
+      It should have happened on {{prediction.publishDate|date}}
     </div>
   </div>
+  <prediction *ngIf="prediction.challengedPrediction" [prediction]="(prediction.challengedPredictionObj|async)"></prediction>
 </div>

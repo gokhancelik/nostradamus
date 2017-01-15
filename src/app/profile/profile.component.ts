@@ -1,3 +1,5 @@
+import { Category } from './../shared/models/category.model';
+import { CategoryService } from './../shared/services/category.service';
 import { PredictionService } from './../shared/services/prediction.service';
 import { Prediction } from './../shared/models/prediction.model';
 import { Observable } from 'rxjs/Rx';
@@ -18,11 +20,16 @@ import {
 export class ProfileComponent implements OnInit {
     predictions: Observable<Prediction[]>;
     likedPredictions: Observable<Prediction[]>;
+    categories: Observable<Category[]>;
     user: User;
     currentUser: User;
     firebaseUser: firebase.User
-    constructor(private activatedRoute: ActivatedRoute, private auth: FirebaseAuth, private userService: UserService,
-        private authService: AuthService, private predictionService: PredictionService) {
+    constructor(private activatedRoute: ActivatedRoute, private auth: FirebaseAuth,
+        private userService: UserService,
+        private authService: AuthService,
+        private predictionService: PredictionService,
+        private categoryService: CategoryService
+    ) {
     }
 
     ngOnInit() {
@@ -34,18 +41,22 @@ export class ProfileComponent implements OnInit {
             that.firebaseUser = d.auth
         )
         that.activatedRoute.params.forEach((params: Params) => {
-            if (params['id'])
+            if (params['id']) {
                 that.userService.getByUid(params['id']).subscribe(
                     data => {
                         that.user = data
                         that.predictions = that.predictionService.getUserPredictions(that.user.id);
                         that.likedPredictions = that.predictionService.getUserLikedPredictions(that.user.id);
+                        that.categories = that.categoryService.getUserCategories(that.user.email);
                     }
                 );
+
+            }
             else {
                 that.user = that.currentUser;
             }
 
         });
     }
+
 }

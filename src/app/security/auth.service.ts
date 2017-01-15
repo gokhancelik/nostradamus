@@ -65,8 +65,10 @@ export class AuthService {
             }
         });
         let users$ = usersFirebase$.map(User.fromJsonList);
-        let user$ = users$.map(users => { return users ? users[0] : Observable.of(); })
-        return user$;
+        let user$ = users$.map(users => {
+            return users ? users[0] : Observable.of();
+        })
+        return user$.take(1);
     }
     public logout() {
         this.auth.logout();

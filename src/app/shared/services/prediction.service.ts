@@ -65,7 +65,7 @@ export class PredictionService extends BaseFirebaseService<Prediction> {
     public getAll(): Observable<Prediction[]> {
         let that = this;
 
-        const predicts$ = this._af.list(this.getRoute())
+        const predicts$ = this._af.list(this.getRoute(), { query: { orderByChild: 'priority' } })
             .map(that.fromJsonList)
             .map(predicts => {
                 return predicts.map(t => { return that.mapRelationalObject(t); });
@@ -95,8 +95,10 @@ export class PredictionService extends BaseFirebaseService<Prediction> {
                             value.category = cat.id;
                         }
                         updates[that.getRoute() + '/' + newPostKey] = value;
+                        updates['users/' + user.id + '/predictions/' + newPostKey] = true;
                         super.firebaseUpdate(updates);
                         that.categoryService.updateCatPredictionCount(value.category);
+                        that.userService.updatePredictionCount(user.id, 1);
                     }
                 )
 
@@ -122,6 +124,7 @@ export class PredictionService extends BaseFirebaseService<Prediction> {
                 updates[that.getRoute() + '/' + oldPrediction.id + '/challengedPrediction'] = newPostKey;
                 super.firebaseUpdate(updates);
                 that.categoryService.updateCatPredictionCount(newPrediction.category);
+                that.userService.updatePredictionCount(user.id, 1);
             }
         });
     }
@@ -137,12 +140,14 @@ export class PredictionService extends BaseFirebaseService<Prediction> {
                             updates['users/' + user.id + '/likedPredictions/' + prediction.id] = true;
                             super.firebaseUpdate(updates);
                             that.updateLikeCount(prediction.id, 1);
+                            that.userService.updateLikeCount(user.id, 1);
                         } else {
                             let updates = {};
                             updates[that.getRoute() + '/' + prediction.id + '/likes/' + user.id] = null;
                             updates['users/' + user.id + '/likedPredictions/' + prediction.id] = null;
                             super.firebaseUpdate(updates);
                             that.updateLikeCount(prediction.id, -1);
+                            that.userService.updateLikeCount(user.id, -1);
                         }
                     }
                 )
@@ -150,11 +155,37 @@ export class PredictionService extends BaseFirebaseService<Prediction> {
             }
         });
     }
+    rate(prediction: Prediction, rate) {
+        let that = this;
+        this._authService.getUserInfo().take(1).subscribe(user => {
+            if (user) {
+                let updates = {};
+                updates[that.getRoute() + '/' + prediction.id + '/rates/' + user.id] = rate;
+                updates['users/' + user.id + '/ratedPredictions/' + prediction.id] = rate;
+                super.firebaseUpdate(updates);
+                that.updateRate(prediction.id, rate);
+            }
+        });
+    }
+    public updateRate(predictionKey, rate) {
+        this._af.object(this.getRoute() + '/' + predictionKey).$ref//_sdkDb.child('categroies/' + categoryKey)
+            .transaction(function (prediction) {
+                if (prediction) {
+                    prediction.rateCount = !prediction.rateCount || prediction.rateCount < 0 ? 0 : prediction.rateCount;
+                    let rateCount = prediction.rateCount = prediction.rateCount + 1;
+                    let totalRate = prediction.rate || 0;
+                    let newTotalRate = prediction.rate = totalRate + rate;
+                    let priority = prediction.priority || 0;
+                    prediction.priority = priority - (newTotalRate * 100);
+                }
+                return prediction;
+            });
+    }
     public updateLikeCount(predictionKey, increment) {
         this._af.object(this.getRoute() + '/' + predictionKey).$ref//_sdkDb.child('categroies/' + categoryKey)
             .transaction(function (prediction) {
                 if (prediction) {
-                    prediction.likeCount = prediction.likeCount < 0 ? 0 : prediction.likeCount;
+                    prediction.likeCount = !prediction.likeCount || prediction.likeCount < 0 ? 0 : prediction.likeCount;
                     let like = prediction.likeCount = prediction.likeCount + increment;
                     let priority = prediction.priority || 0;
                     prediction.priority = priority - (like * 10000);
@@ -172,19 +203,21 @@ export class PredictionService extends BaseFirebaseService<Prediction> {
 
         return predicts$;
     }
-    public getUserLikedPredictions(userKey: string): any {
+    public getUserLikedPredictions(userKey: string): Observable<Prediction[]> {
         let that = this;
         const predicts$ = this._af.list('users/' + userKey + '/likedPredictions')
             .map((predictionKeys) => predictionKeys
                 .map((predictionKey) => {
-                    return that._af.object(`${this.Route}/${predictionKey.$key}`)
+                    return that._af.object(that.Route + '/' + predictionKey.$key)
                 }))
             .flatMap((res) => {
                 return Observable.combineLatest(res);
-            }).map(this.fromJsonList)
+            })
+            .map(that.fromJsonList)
             .map(predicts => {
                 return predicts.map(t => { return that.mapRelationalObject(t); });
             });
+        predicts$.subscribe(console.log);
         return predicts$;
     }
 }

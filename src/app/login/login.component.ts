@@ -9,7 +9,7 @@ import { Router } from '@angular/router';
   selector: 'login',
   encapsulation: ViewEncapsulation.None,
   template: require('./login.html'),
-  styleUrls: ['login.css']
+  styleUrls: ['../../assets/css/bootstrap-social.css']
 })
 export class Login {
 
@@ -58,11 +58,13 @@ export class Login {
     });
   }
   loginSuccess(d: FirebaseAuthState, that: Login) {
-    that.userService.getByUid(d.uid).take(1).subscribe(user => {
-      if (user) {
+    that.userService.exist(d.uid).take(1).subscribe(exist => {
+      if (!exist) {
         let user: User = new User(null, d.auth.displayName, null, d.auth.email, d.auth.email, d.uid, d.auth.photoURL);
         that.userService.add(user);
       }
+      that.router.navigate(['/home']);
+
     });
   }
 }

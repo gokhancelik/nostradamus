@@ -36,9 +36,9 @@ export class User extends BaseModel {
             }
         };
     }
-    static fromJson({ $key, name, phone, userName, email, uid, photoUrl, followingCount, followerCount, userObj }): User {
+    static fromJson({ $key, name, phone, userName, email, uid, photoUrl, followingCount, followerCount, predictionCount,likeCount, userObj, followers, followings, isFollowingByCurrentUser, isSelf }): User {
         return new User(
-            $key, name, phone, userName, email, uid, photoUrl, followingCount, followerCount, userObj);
+            $key, name, phone, userName, email, uid, photoUrl, followingCount, followerCount, predictionCount,likeCount, userObj, followers, followings, isFollowingByCurrentUser, isSelf);
     }
     constructor(
         id: string = null,
@@ -48,9 +48,15 @@ export class User extends BaseModel {
         public email: string = null,
         public uid: string = null,
         public photoUrl: string = null,
-        public followingCount: number = null,
-        public followerCount: number = null,
-        public userObj: Observable<any> = null,
+        public followingCount: number = 0,
+        public followerCount: number = 0,
+        public predictionCount: number = 0,
+        public likeCount: number = 0,
+        public userObj: Observable<User> = null,
+        public followers: Observable<User[]> = null,
+        public followings: Observable<User[]> = null,
+        public isFollowingByCurrentUser: Observable<boolean> = null,
+        public isSelf: Observable<boolean> = null
     ) {
         super();
         this.id = id;

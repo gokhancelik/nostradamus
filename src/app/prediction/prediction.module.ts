@@ -1,9 +1,10 @@
+import { UserModule } from './../user/user.module';
 import { ChallengeComponent } from './challenge.component';
 import { ComponentsModule } from './../components/components.module';
 import { PredictionListComponent } from './prediction.list.component';
 import { PredictionAddComponent } from './prediction.add.component';
 import { PredictButtonComponent } from './prediction.button.component';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { DropdownModule, ModalModule, TypeaheadModule } from 'ng2-bootstrap/ng2-bootstrap';
 import { PredictionComponent } from './prediction.component';
@@ -21,11 +22,11 @@ import { DynamicFormsBootstrapUIModule } from '@ng2-dynamic-forms/ui-bootstrap';
 
 @NgModule({
     imports: [DynamicFormsCoreModule, DynamicFormsBootstrapUIModule, DropdownModule,
-        ModalModule.forRoot(), CommonModule, NgbModule.forRoot(), RouterModule,
+        ModalModule.forRoot(), CommonModule, NgbModule.forRoot(), RouterModule, UserModule,
         TypeaheadModule, ReactiveFormsModule, FormsModule, MomentModule, ComponentsModule],
     exports: [PredictButtonComponent, PredictionListComponent],
     declarations: [PredictionComponent, PredictionAddComponent, PredictButtonComponent,
         PredictionListComponent, ChallengeComponent],
-    providers: [DynamicFormService, DynamicFormRelationService],
+    providers: [DynamicFormService, DynamicFormRelationService, DatePipe],
 })
 export class PredictionModule { }
