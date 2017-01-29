@@ -1,3 +1,4 @@
+import { StorageService } from './storage.service';
 import { User } from './../models/user.model';
 import { UserService } from './user.service';
 import { CategoryService } from './category.service';
@@ -15,6 +16,7 @@ export class PredictionService extends BaseFirebaseService<Prediction> {
         private _authService: AuthService,
         private categoryService: CategoryService,
         private userService: UserService,
+        private storageService: StorageService,
         @Inject(FirebaseRef) fb) {
         super(_af, 'predictions', fb, _authService);
     }
@@ -62,6 +64,15 @@ export class PredictionService extends BaseFirebaseService<Prediction> {
             .map(t => { return that.mapRelationalObject(t); });
         return prediction$;
     }
+    public getByCategory(catKey: string): Observable<Prediction[]> {
+        let that = this;
+        const prediction$ = this._af.list(this.getRoute(), { query: { orderByChild: 'category', equalTo: catKey } })
+            .map(this.fromJsonList)
+            .map(predicts => {
+                return predicts.map(t => { return that.mapRelationalObject(t); });
+            });
+        return prediction$;
+    }
     public getAll(): Observable<Prediction[]> {
         let that = this;
 
@@ -73,7 +84,7 @@ export class PredictionService extends BaseFirebaseService<Prediction> {
 
         return predicts$;
     }
-    predict(value: Prediction, categoryText: string) {
+    public predict(value: Prediction, categoryText: string, image: File = null) {
         let that = this;
         value.isChallenge = false;
         this._authService.getUserInfo().take(1).subscribe(user => {
@@ -94,11 +105,41 @@ export class PredictionService extends BaseFirebaseService<Prediction> {
                         } else {
                             value.category = cat.id;
                         }
-                        updates[that.getRoute() + '/' + newPostKey] = value;
                         updates['users/' + user.id + '/predictions/' + newPostKey] = true;
-                        super.firebaseUpdate(updates);
-                        that.categoryService.updateCatPredictionCount(value.category);
-                        that.userService.updatePredictionCount(user.id, 1);
+                        if (image !== null) {
+                            var uploadTask = that.storageService.upload(user.id, newPostKey, image.type, image);
+                            uploadTask.on('state_changed', // or 'state_changed'
+                                function (snapshot) {
+                                    // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+                                }, function (error) {
+                                    switch (error.code) {
+                                        case 'storage/unauthorized':
+                                            // User doesn't have permission to access the object
+                                            break;
+
+                                        case 'storage/canceled':
+                                            // User canceled the upload
+                                            break;
+
+                                        case 'storage/unknown':
+                                            // Unknown error occurred, inspect error.serverResponse
+                                            break;
+                                    }
+                                }, function () {
+                                    // Upload completed successfully, now we can get the download URL
+                                    value.imageUrl = uploadTask.snapshot.downloadURL;
+                                    updates[that.getRoute() + '/' + newPostKey] = value;
+                                    that.firebaseUpdate(updates);
+                                    that.categoryService.updateCatPredictionCount(value.category);
+                                    that.userService.updatePredictionCount(user.id, 1);
+                                });
+                        }
+                        else {
+                            updates[that.getRoute() + '/' + newPostKey] = value;
+                            super.firebaseUpdate(updates);
+                            that.categoryService.updateCatPredictionCount(value.category);
+                            that.userService.updatePredictionCount(user.id, 1);
+                        }
                     }
                 )
 
@@ -106,7 +147,7 @@ export class PredictionService extends BaseFirebaseService<Prediction> {
             }
         });
     }
-    challenge(newPrediction: Prediction, oldPrediction: Prediction) {
+    public challenge(newPrediction: Prediction, oldPrediction: Prediction) {
         newPrediction.category = oldPrediction.category;
         newPrediction.hideDate = oldPrediction.hideDate;
         newPrediction.publishDate = oldPrediction.publishDate;
@@ -128,7 +169,7 @@ export class PredictionService extends BaseFirebaseService<Prediction> {
             }
         });
     }
-    like(prediction: Prediction) {
+    public like(prediction: Prediction) {
         let that = this;
         this._authService.getUserInfo().take(1).subscribe(user => {
             if (user) {
@@ -155,7 +196,7 @@ export class PredictionService extends BaseFirebaseService<Prediction> {
             }
         });
     }
-    rate(prediction: Prediction, rate) {
+    public rate(prediction: Prediction, rate) {
         let that = this;
         this._authService.getUserInfo().take(1).subscribe(user => {
             if (user) {

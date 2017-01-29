@@ -51,7 +51,7 @@ export class Login {
       _that.loginSuccess(data, _that);
     });
   }
-  public tweeterLogin(): void {
+  public twitterLogin(): void {
     let _that = this;
     this.authService.loginWithTwitter().subscribe(data => {
       _that.loginSuccess(data, _that);

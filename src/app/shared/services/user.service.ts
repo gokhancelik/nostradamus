@@ -1,18 +1,23 @@
+import { StorageService } from './storage.service';
 import { Category } from './../models/category.model';
 import { User } from './../models/user.model';
 import { AuthService } from './../../security/auth.service';
 import { Injectable, Inject } from '@angular/core';
-import { AngularFireDatabase, AngularFireAuth, FirebaseRef } from 'angularfire2';
+import { AngularFireDatabase, AngularFireAuth, FirebaseRef, FirebaseAuth } from 'angularfire2';
 import { BaseFirebaseService } from './base.service';
 import { Observable, Subject } from 'rxjs/Rx';
 @Injectable()
 export class UserService extends BaseFirebaseService<User> {
     constructor(private afAuth: AngularFireAuth,
         private _af: AngularFireDatabase,
-        @Inject(FirebaseRef) fb, private _authService: AuthService) {
+        private storageService: StorageService,
+        @Inject(FirebaseRef) private fb, private _authService: AuthService) {
         super(_af, 'users', fb, _authService);
     }
     public mapRelationalObject(obj: User) {
+        if (!obj) {
+            return obj;
+        }
         let that = this;
         obj.isFollowingByCurrentUser = this.isFollowingByCurrentUser(obj);
         obj.followers = this.getFollowers(obj.id);
@@ -21,10 +26,14 @@ export class UserService extends BaseFirebaseService<User> {
         return obj;
     }
     public fromJson(obj) {
-        return User.fromJson(obj);
+        if (obj)
+            return User.fromJson(obj);
+        else return null;
     }
     public fromJsonList(array) {
-        return User.fromJsonList(array);
+        if (array)
+            return User.fromJsonList(array);
+        else return null;
     }
     add(value: User) {
         let that = this;
@@ -51,15 +60,26 @@ export class UserService extends BaseFirebaseService<User> {
         return user$.map(this.fromJson)
             .map(t => { return this.mapRelationalObject(t); });
     }
+    public getCurrentUser(): Observable<User> {
+        let that = this;
+        const currentUser$ = this._authService.getUserInfo().take(1).switchMap(cu => {
+            if (cu)
+                return that.getByUid(cu.uid);
+            else {
+                return Observable.of(null);
+            }
+        });
+        return currentUser$;
+    }
     public isSelf(user: User): Observable<boolean> {
-        const isLikedByCurrentUser$ = this._authService.getUserInfo().take(1).switchMap(cu => {
+        const isSelf$ = this._authService.getUserInfo().take(1).switchMap(cu => {
             if (cu)
                 return Observable.of(cu.id === user.id);
             else {
                 return Observable.of(false);
             }
         });
-        return isLikedByCurrentUser$;
+        return isSelf$;
     }
     public isFollowingByCurrentUser(following: User): Observable<boolean> {
         const isLikedByCurrentUser$ = this._authService.getUserInfo().take(1).switchMap(cu => {
@@ -182,5 +202,41 @@ export class UserService extends BaseFirebaseService<User> {
             });
         return followings$;
     }
-   
+    public updateProfile(displayName: string, image: File = null) {
+        let that = this;
+        this._authService.getUserInfo().take(1).subscribe(user => {
+            if (user) {
+                let updates = {};
+                updates[that.Route + '/' + user.id + '/name'] = displayName;
+                if (image !== null) {
+                    var uploadTask = that.storageService.upload(user.id, 'profile', image.type, image);
+                    uploadTask.on('state_changed', // or 'state_changed'
+                        function (snapshot) {
+                            // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+                        }, function (error) {
+                            switch (error.code) {
+                                case 'storage/unauthorized':
+                                    // User doesn't have permission to access the object
+                                    break;
+
+                                case 'storage/canceled':
+                                    // User canceled the upload
+                                    break;
+
+                                case 'storage/unknown':
+                                    // Unknown error occurred, inspect error.serverResponse
+                                    break;
+                            }
+                        }, function () {
+                            // Upload completed successfully, now we can get the download URL
+                            updates[that.Route + '/' + user.id + '/photoUrl'] = uploadTask.snapshot.downloadURL;
+                            that.firebaseUpdate(updates);
+                        });
+                }
+                else {
+                    super.firebaseUpdate(updates);
+                }
+            }
+        });
+    }
 }

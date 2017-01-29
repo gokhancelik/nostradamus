@@ -1,3 +1,5 @@
+import { CATEGORY_ROUTES } from './category/category.routing';
+import { PREDICTION_ROUTES } from './prediction/prediction.routing';
 import { LOGIN_ROUTES } from './login/login.routing';
 import { PROFILE_ROUTES } from './profile/profile.routing';
 import { Routes, RouterModule } from '@angular/router';
@@ -10,6 +12,11 @@ export const ROUTES: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
   ...LOGIN_ROUTES,
   ...PROFILE_ROUTES,
-  { path: 'home', component: HomeComponent },
+  ...PREDICTION_ROUTES,
+  ...CATEGORY_ROUTES,
+  {
+    path: 'home',
+    component: HomeComponent
+  },
   { path: '**', component: NoContentComponent },
 ];

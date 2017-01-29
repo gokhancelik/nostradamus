@@ -1,0 +1,17 @@
+<ul class="list-group">
+  <li class="list-group-item justify-content-between">
+    <template #rt let-r="result" let-t="term">
+      {{ r.text }}
+      <small class="text-muted">Prediction Count: {{t.predictionsCount}}</small>
+    </template>
+    <input type="text" autocomplete="off" class="form-control" [resultTemplate]="rt" (selectItem)="categoryOnSelect($event)"
+      #categoryInput [(ngModel)]="categoryResult" name="categoryInput" [inputFormatter]="formatter" [ngbTypeahead]="search"
+      placeholder="Category search" required/>
+    <span *ngIf="searching">searching...</span>
+    <div class="form-control-feedback" *ngIf="searchFailed">Sorry, suggestions could not be loaded.</div>
+  </li>
+  <li class="list-group-item justify-content-between" *ngFor="let cat of source | async">
+    <a href="javascript:void(0);" routerLink="{{'/category/' + cat?.id}}">{{cat.text}}</a>
+    <span class="tag tag-default tag-pill float-xs-right">{{cat.predictionsCount}}</span>
+  </li>
+</ul>

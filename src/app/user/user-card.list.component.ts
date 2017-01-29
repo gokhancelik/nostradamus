@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs/Observable';
 import { User } from './../shared/models/user.model';
-import { Component, OnInit, Input, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, Input, ViewEncapsulation, OnChanges } from '@angular/core';
 
 @Component({
     encapsulation: ViewEncapsulation.None,
@@ -13,19 +13,16 @@ import { Component, OnInit, Input, ViewEncapsulation } from '@angular/core';
     </div>
     `
 })
-export class UserCardListComponent implements OnInit {
+export class UserCardListComponent implements OnInit, OnChanges {
     @Input() userList: User[];
     @Input() source: Observable<User[]>;
     constructor() { }
 
     ngOnInit() {
+    }
+    ngOnChanges(changes) {
         let that = this;
-        if (that.source) {
-            that.source.subscribe(
-                d => {
-                    that.userList = d;
-                }
-            );
-        }
+        if (changes.source && changes.source.currentValue)
+            that.source.subscribe(data => { that.userList = data; });
     }
 }

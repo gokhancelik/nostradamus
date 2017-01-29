@@ -3,22 +3,33 @@
     <div class="card-block">
       <user-small-card [source]="prediction.userObj"></user-small-card>
     </div>
-    <img *ngIf="prediction.imageUrl" [src]="prediction.imageUrl" alt="Card image">
+    <img *ngIf="prediction.imageUrl" [src]="prediction.imageUrl" class="img-fluid" alt="Card image">
     <div class="card-block">
-      <h4 class="card-title">{{(prediction.categoryObj | async)?.text}}</h4>
+      <h4 class="card-title" routerLink="{{'/category/' + (prediction.categoryObj | async)?.id}}"><a href="javascript:void(0);">{{(prediction.categoryObj | async)?.text}}</a></h4>
       <p class="card-text" *ngIf="!prediction.isHidden">{{prediction.text}}</p>
       <p class="card-text" *ngIf="prediction.isHidden">This prediction is hidden. It will be visible in
         <count-down [inputDate]="prediction.publishDate"></count-down>
       </p>
-      <span class="btn"><span class="" (click)="like()"
+      <div class="row">
+        <div class="col-sm-12">
+          <span class="btn"><span class="" (click)="like()"
      [ngClass]="(prediction.isLikedByCurrentUser | async) ?'liked':'notliked'" 
-     aria-hidden="true"></span> 
-    </span>
-      <span class="badge badge-pill badge-default" *ngIf="prediction.likeCount>0"><a href="javascript:void(0)">{{prediction.likeCount}}</a></span>
-      <span class="btn" (click)="challenge()" *ngIf="!(prediction.challengedPrediction || prediction.isChallenge)"><i class="fa fa-random fa-2x" aria-hidden="true"></i></span>
-      <challenge #challengeModal [prediction]="prediction" *ngIf="!(prediction.challengedPrediction || prediction.isChallenge)"></challenge>
-      <span class="btn float-xs-right"><i class="fa fa-facebook fa-2x" aria-hidden="true"></i></span>
+     aria-hidden="true"></span>
+          </span>
+          <span class="badge badge-pill badge-default" *ngIf="prediction.likeCount>0"><a href="javascript:void(0)">{{prediction.likeCount}}</a></span>
+          <span class="btn" (click)="challenge()" *ngIf="!prediction.isPublished && !(prediction.challengedPrediction || prediction.isChallenge)"><i class="fa fa-random fa-2x" aria-hidden="true"></i></span>
+          <challenge #challengeModal [prediction]="prediction" *ngIf="!(prediction.challengedPrediction || prediction.isChallenge)"></challenge>
+        </div>
+      </div>
       <p class="card-text"><small class="text-muted">Created {{prediction.createdAt| amTimeAgo}}</small></p>
+      <div class="row">
+        <div class="col-sm-12">
+          <div class="float-xs-right">
+            <share-buttons [image]="prediction?.imageUrl" [description]="prediction?.text" [pinterest]="false" [tumblr]="false" [reddit]="false"
+              [stumbleUpOn]="false"></share-buttons>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="card-footer text-muted" *ngIf="!prediction.isPublished">
       <div class="row">

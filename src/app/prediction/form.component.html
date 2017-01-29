@@ -15,8 +15,8 @@
           </template>
           <div class="form-group" [class.has-danger]="searchFailed">
             <input type="text" autocomplete="off" class="form-control" [resultTemplate]="rt" (selectItem)="categoryOnSelect($event)"
-              #categoryInput [(ngModel)]="categoryResult" name="categoryInput" [ngbTypeahead]="search"
-              placeholder="Category search" required/>
+              #categoryInput [(ngModel)]="categoryResult" name="categoryInput" [inputFormatter]="formatter" [ngbTypeahead]="search" placeholder="Category search"
+              required/>
             <span *ngIf="searching">searching...</span>
             <div class="form-control-feedback" *ngIf="searchFailed">Sorry, suggestions could not be loaded.</div>
           </div>
@@ -59,9 +59,20 @@
           </div>
           <button type="submit" class="btn btn-default" [disabled]="!predictionForm.form.valid">Predict</button>
         </form>
+        <hr>
+        <div class="row" *ngIf="uploadedImageUrl!=null">
+          <div class="col-sm-12">
+            <button class="close" (click)="deleteImage()" aria-label="Delete Image">
+          <span aria-hidden="true">&times;</span>
+        </button>
+            <img [src]="uploadedImageUrl" class="img-fluid" alt="Card image">
+          </div>
+        </div>
       </div>
       <div class="modal-footer">
-        <!--<button class="btn btn-primary confirm-btn" (click)="close()">Save changes</button>-->
+        <label class="btn btn-default btn-file"  [class.disabled]="uploadedImageUrl">
+          <i class="fa fa-image" aria-hidden="true"></i> <input type="file" [disabled]="uploadedImageUrl" (change)="imageChanged($event)" hidden>
+        </label>
       </div>
     </div>
   </div>

@@ -1,8 +1,8 @@
 <top-nav-bar></top-nav-bar>
 <div class="jumbotron text-center">
-  <h1>What is next?</h1>
+  <h1>What is next about {{(category | async)?.text}}</h1>
   <p class="animated infinite">
-    <predict-button></predict-button>
+    <predict-button [category]="(category | async)"></predict-button>
   </p>
   <p>
   </p>

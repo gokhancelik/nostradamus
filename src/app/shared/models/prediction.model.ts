@@ -15,7 +15,7 @@ export class Prediction extends BaseModel {
     }
     public static fromJson({
         $key, text, publishDate, hideDate,
-        category, categoryObj, imageUrl, likeCount, rate,rateCount,
+        category, categoryObj, imageUrl, image, likeCount, rate, rateCount,
         isChallenge,
         user, userObj,
         isLikedByCurrentUser,
@@ -24,8 +24,8 @@ export class Prediction extends BaseModel {
     }, isFirst = true): Prediction {
         return new Prediction(
             $key, text, new Date(publishDate), new Date(hideDate),
-            category, categoryObj, likeCount, rate,rateCount,
-            imageUrl, isChallenge,
+            category, categoryObj, likeCount, rate, rateCount,
+            imageUrl, image, isChallenge,
             user, userObj,
             challengedPrediction,
             challengedPredictionObj,
@@ -44,6 +44,7 @@ export class Prediction extends BaseModel {
         public rate: number = 0,
         public rateCount: number = 0,
         public imageUrl: string = null,
+        public image: any = null,
         public isChallenge: boolean = false,
         public user: string = null,
         public userObj: Observable<User> = null,

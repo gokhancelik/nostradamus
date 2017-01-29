@@ -1,3 +1,5 @@
+import { RouterModule } from '@angular/router';
+import { SettingsComponent } from './settings.component';
 import { CategoryModule } from './../category/category.module';
 import { UserModule } from './../user/user.module';
 import { PredictionModule } from './../prediction/prediction.module';
@@ -8,9 +10,9 @@ import { NgModule } from '@angular/core';
 import { ProfileComponent } from './profile.component';
 
 @NgModule({
-    imports: [ComponentsModule, CommonModule, NgbModule, PredictionModule, UserModule, CategoryModule],
+    imports: [ComponentsModule, CommonModule, NgbModule, PredictionModule, UserModule, CategoryModule, RouterModule],
     exports: [],
-    declarations: [ProfileComponent],
+    declarations: [ProfileComponent, SettingsComponent],
     providers: [],
 })
 export class ProfileModule { }

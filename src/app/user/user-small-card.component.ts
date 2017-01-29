@@ -1,11 +1,11 @@
 import { User } from './../shared/models/user.model';
 import { Observable } from 'rxjs/Observable';
-import { Component, OnInit, Input, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, Input, ViewEncapsulation, OnChanges } from '@angular/core';
 
 @Component({
-    encapsulation: ViewEncapsulation.None,
-    selector: 'user-small-card',
-    template: `
+  encapsulation: ViewEncapsulation.None,
+  selector: 'user-small-card',
+  template: `
       <div class="row">
       <div class="col-xs-2">
         <img *ngIf="user?.photoUrl" class="rounded float-left img-fluid"  [src]="user.photoUrl"
@@ -20,14 +20,17 @@ import { Component, OnInit, Input, ViewEncapsulation } from '@angular/core';
     </div>
     `
 })
-export class UserSmallCardComponent implements OnInit {
-    @Input() source: Observable<User>
-    @Input() user: User
-    constructor() { }
+export class UserSmallCardComponent implements OnInit, OnChanges {
+  @Input() source: Observable<User>
+  @Input() user: User
+  constructor() { }
 
-    ngOnInit() {
-        let that = this;
-        if (that.source)
-            that.source.subscribe(d => that.user = d);
-    }
+  ngOnInit() {
+
+  }
+  ngOnChanges(changes) {
+    let that = this;
+    if (changes.source && changes.source.currentValue)
+      that.source.subscribe(d => that.user = d);
+  }
 }

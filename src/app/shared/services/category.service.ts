@@ -18,6 +18,10 @@ export class CategoryService extends BaseFirebaseService<Category> {
     public fromJsonList(array) {
         return Category.fromJsonList(array);
     }
+    getTrends(): Observable<Category[]> {
+        return this._af.list(this.Route, { query: { orderByChild: 'priority', limitToFirst: 10 } })
+            .map(this.fromJsonList);
+    }
     public search(): Observable<Category[]> {
         // const cats$ = this._af.list('categories/', {
         //     query: {
@@ -53,9 +57,9 @@ export class CategoryService extends BaseFirebaseService<Category> {
                 }
             }, true);
     }
-    public getUserCategories(userEmail: string): Observable<Category[]> {
+    public getUserCategories(uid: string): Observable<Category[]> {
         let that = this;
-        const cats$ = this._af.list(this.getRoute(), { query: { orderByChild: 'createdBy', equalTo: userEmail } })
+        const cats$ = this._af.list(this.getRoute(), { query: { orderByChild: 'createdBy', equalTo: uid } })
             .map(that.fromJsonList)
         return cats$;
     }

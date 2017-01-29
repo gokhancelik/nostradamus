@@ -25,13 +25,15 @@ export class PredictionAddComponent implements OnInit {
     public categoryDataSource: Observable<Category[]>;
     protected formGroup: FormGroup;
     private model: Prediction;
-    private categoryResult: any;
+    public categoryResult: any;
     private pbDate: NgbDateStruct;
     private pbTime: NgbTimeStruct;
     private pbMinDate: NgbDateStruct
     private haDate: NgbDateStruct;
     private haTime: NgbTimeStruct;
     private today: Date = new Date();
+    private uploadedImage: File;
+    private uploadedImageUrl: string;
     categories: Category[];
     searching = false;
     searchFailed = false;
@@ -41,9 +43,8 @@ export class PredictionAddComponent implements OnInit {
             .debounceTime(200)
             .map(term => term === '' ? []
                 : this.categories.filter(v => new RegExp(term, 'gi').test(v.text)).slice(0, 10));
-    // formatter(x: { text: string }) {
-    //     return x.text || x;
-    // }
+
+    formatter = (x: { text: string }) => x.text;
     constructor(private categoryService: CategoryService, private predictionService: PredictionService) {
         this.categoryService.search().subscribe(
             data => this.categories = data
@@ -65,6 +66,7 @@ export class PredictionAddComponent implements OnInit {
         this.model.hideDate = new Date(this.haDate.year, this.haDate.month, this.haDate.day, event.hour, event.minute, event.second);
     }
     public show() {
+        this.model = new Prediction();
         if (this.formModal) {
             this.today = new Date();
             this.pbMinDate = { day: this.today.getDate(), month: this.today.getMonth() + 1, year: this.today.getFullYear() }
@@ -97,12 +99,32 @@ export class PredictionAddComponent implements OnInit {
         }
         if (this.categoryResult.text) {
             // this.model.category = this.categoryResult.id;
-            this.predictionService.predict(this.model, this.categoryResult.text);
+            this.predictionService.predict(this.model, this.categoryResult.text, this.uploadedImage);
         }
         else {
-            this.predictionService.predict(this.model, this.categoryResult);
+            this.predictionService.predict(this.model, this.categoryResult, this.uploadedImage);
         }
         //if (this.onSaved) this.onSaved.emit(this.model);
         if (this.formModal) this.formModal.hide();
+    }
+    public imageChanged(event) {
+        if (!event.srcElement.files.length) {
+            return;
+        }
+        let that = this;
+        let file: File = event.srcElement.files[0];
+        if (file.type.split('/')[0] === 'image') {
+            that.uploadedImage = file;
+            var reader = new FileReader();
+            reader.onload = (e: any) => {
+                that.uploadedImageUrl = e.target.result;
+            }
+
+            reader.readAsDataURL(that.uploadedImage);
+        }
+    }
+    public deleteImage() {
+        this.uploadedImageUrl = null;
+        this.uploadedImage = null;
     }
 }

@@ -21,6 +21,8 @@ export class ProfileComponent implements OnInit {
     predictions: Observable<Prediction[]>;
     likedPredictions: Observable<Prediction[]>;
     categories: Observable<Category[]>;
+    followings: Observable<User[]>;
+    followers: Observable<User[]>;
     user: User;
     currentUser: User;
     firebaseUser: firebase.User
@@ -38,7 +40,7 @@ export class ProfileComponent implements OnInit {
             data => that.currentUser = data
         );
         that.auth.take(1).subscribe(d =>
-            that.firebaseUser = d.auth
+            that.firebaseUser = d !== null ? d.auth : null
         )
         that.activatedRoute.params.forEach((params: Params) => {
             if (params['id']) {
@@ -47,7 +49,9 @@ export class ProfileComponent implements OnInit {
                         that.user = data
                         that.predictions = that.predictionService.getUserPredictions(that.user.id);
                         that.likedPredictions = that.predictionService.getUserLikedPredictions(that.user.id);
-                        that.categories = that.categoryService.getUserCategories(that.user.email);
+                        that.categories = that.categoryService.getUserCategories(that.user.id);
+                        that.followers = that.user.followers;
+                        that.followings = that.user.followings;
                     }
                 );
 

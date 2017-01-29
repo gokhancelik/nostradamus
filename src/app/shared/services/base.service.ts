@@ -16,6 +16,7 @@ export abstract class BaseFirebaseService<T extends BaseModel> implements IServi
         return this.af.list(this._route, { query: { orderByChild: 'priority' } })
             .map(this.fromJsonList);
     }
+    
     public getRoute(): string {
         return this._route;
     }
@@ -117,7 +118,7 @@ export abstract class BaseFirebaseService<T extends BaseModel> implements IServi
     preparePreDeleteByUser(user: User): any {
         return {
             deletedAt: new Date().getTime(),
-            deletedBy: user.email,
+            deletedBy: user.id,
             isDelete: true
         }
     }
@@ -137,15 +138,15 @@ export abstract class BaseFirebaseService<T extends BaseModel> implements IServi
     }
     preparePreModifyByUser(value: T, user: User): any {
         value.modifiedAt = new Date();
-        value.modifiedBy = user.email;
+        value.modifiedBy = user.id;
         let nd = this.mapObjectToFirebaseObject(value);
         return nd;
     }
     preparePreCreateByUser(value: T, user: User): any {
         value.createdAt = new Date();
         value.modifiedAt = new Date();
-        value.createdBy = user.email;
-        value.modifiedBy = user.email;
+        value.createdBy = user.id;
+        value.modifiedBy = user.id;
         value.priority = (value.createdAt.getTime() * -1)
         let nd = this.mapObjectToFirebaseObject(value);
         return nd;

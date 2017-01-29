@@ -1,8 +1,8 @@
 import { PredictionService } from './../shared/services/prediction.service';
 import { ChallengeComponent } from './challenge.component';
 import { Prediction } from './../shared/models/prediction.model';
-import { Component, OnInit, ViewEncapsulation, Input, ViewChild } from '@angular/core';
-
+import { Component, OnInit, ViewEncapsulation, Input, ViewChild, Inject } from '@angular/core';
+import { DOCUMENT } from '@angular/platform-browser'
 @Component({
     encapsulation: ViewEncapsulation.None,
     selector: 'prediction',
@@ -11,7 +11,7 @@ import { Component, OnInit, ViewEncapsulation, Input, ViewChild } from '@angular
         `.star {
       position: relative;  
       display: inline-block;
-      font-size: 2rem;
+      font-size: 1rem;
     }
     .full {
       color: #0275d8;
@@ -27,10 +27,12 @@ import { Component, OnInit, ViewEncapsulation, Input, ViewChild } from '@angular
 export class PredictionComponent implements OnInit {
     @Input() prediction: Prediction;
     @ViewChild('challengeModal') challengeModal: ChallengeComponent;
+    linkToShare: string;
+    constructor(private predictionService: PredictionService, @Inject(DOCUMENT) private document: any) { }
 
-    constructor(private predictionService: PredictionService) { }
-
-    ngOnInit() { }
+    ngOnInit() {
+        this.linkToShare = this.document.location.origin + '/#/prediction/' + this.prediction.id;
+    }
     challenge() {
         this.challengeModal.show();
     }

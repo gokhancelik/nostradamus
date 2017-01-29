@@ -1,5 +1,6 @@
+import { Category } from './../shared/models/category.model';
 import { PredictionAddComponent } from './prediction.add.component';
-import { Component, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, ViewChild, ViewEncapsulation, Input } from '@angular/core';
 
 @Component({
     selector: 'predict-button',
@@ -13,10 +14,12 @@ import { Component, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 })
 export class PredictButtonComponent implements OnInit {
     @ViewChild('predictModal') predictModal: PredictionAddComponent;
+    @Input() category: Category;
     constructor() { }
 
     ngOnInit() { }
     public openPredictModal() {
+        this.predictModal.categoryResult = this.category;
         this.predictModal.show();
     }
 }

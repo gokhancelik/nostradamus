@@ -15,10 +15,11 @@ export class PredictionListComponent implements OnInit, OnChanges {
     }
 
     ngOnInit() {
-        let that = this;
-        that.source.subscribe(data => that.predictionList = data);
+
     }
     ngOnChanges(changes) {
-
+        let that = this;
+        if (changes.source && changes.source.currentValue)
+            that.source.subscribe(data => { that.predictionList = data; });
     }
 }

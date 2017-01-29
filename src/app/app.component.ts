@@ -19,7 +19,9 @@ import { AppState } from './app.service';
     './app.component.css'
   ],
   template: `
+  <div class="container">
    <router-outlet></router-outlet>
+   </div>
    `
 })
 export class AppComponent implements OnInit {

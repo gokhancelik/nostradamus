@@ -1,0 +1,21 @@
+<top-nav-bar>
+</top-nav-bar>
+<div class="container">
+  <div class="row">
+    <div class="col-sm-12 col-md-12 col-lg-4">
+      <div class="row">
+        <div class="col-xs-12" *ngIf="user">
+          <user-card [user]="user"></user-card>
+        </div>
+        <div class="col-xs-12">
+          <div class="list-group">
+            <a href="javascript:void(0);" class="list-group-item list-group-item-action" [routerLink]="'editProfile'">Edit Profile</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-12 col-lg-8">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>

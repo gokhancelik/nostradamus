@@ -7,48 +7,46 @@
 
 </style>
 <top-nav-bar></top-nav-bar>
-<div class="container" *ngIf="user">
-  <div class="row">
-    <div class="col-sm-12 col-md-12 col-lg-4">
-      <user-card [user]="user"></user-card>
-    </div>
-    <div class="col-sm-12 col-md-12 col-lg-8">
-      <ngb-tabset type="pills">
-        <ngb-tab>
-          <template ngbTabTitle>Predictions {{user?.predictionCount}}</template>
-          <template ngbTabContent>
-            <hr>
-            <prediction-list *ngIf="predictions" [source]="predictions"></prediction-list>
-          </template>
-        </ngb-tab>
-        <ngb-tab>
-          <template ngbTabTitle>Likes {{user?.likeCount}}</template>
-          <template ngbTabContent>
-            <hr>
-            <prediction-list *ngIf="predictions" [source]="likedPredictions"></prediction-list>
-          </template>
-        </ngb-tab>
-        <ngb-tab>
-          <template ngbTabTitle>Followings {{user?.followingCount}}</template>
-          <template ngbTabContent>
-            <hr>
-            <user-card-list [source]="user?.followings"></user-card-list>
-          </template>
-        </ngb-tab>
-        <ngb-tab>
-          <template ngbTabTitle>Followers {{user?.followerCount}}</template>
-          <template ngbTabContent>
-            <hr>
-            <user-card-list [source]="user?.followers"></user-card-list>
-          </template>
-        </ngb-tab>
-        <ngb-tab title="Categories">
-          <template ngbTabContent>
-            <hr>
-            <category-list [source]="categories"></category-list>
-          </template>
-        </ngb-tab>
-      </ngb-tabset>
-    </div>
+<div class="row" *ngIf="user">
+  <div class="col-sm-12 col-md-12 col-lg-4">
+    <user-card [user]="user"></user-card>
+  </div>
+  <div class="col-sm-12 col-md-12 col-lg-8">
+    <ngb-tabset type="pills" #t="ngbTabset">
+      <ngb-tab>
+        <template ngbTabTitle>Predictions <span class="tag tag-primary tag-pill float-xs-right">{{user?.predictionCount}}</span></template>
+        <template ngbTabContent>
+          <hr>
+          <prediction-list *ngIf="predictions" [source]="predictions"></prediction-list>
+        </template>
+      </ngb-tab>
+      <ngb-tab>
+        <template ngbTabTitle>Likes <span class="tag tag-primary tag-pill float-xs-right">{{user?.likeCount}}</span></template>
+        <template ngbTabContent>
+          <hr>
+          <prediction-list *ngIf="likedPredictions" [source]="likedPredictions"></prediction-list>
+        </template>
+      </ngb-tab>
+      <ngb-tab>
+        <template ngbTabTitle>Followings <span class="tag tag-primary tag-pill float-xs-right">{{user?.followingCount}}</span></template>
+        <template ngbTabContent>
+          <hr>
+          <user-card-list [source]="followings"></user-card-list>
+        </template>
+      </ngb-tab>
+      <ngb-tab>
+        <template ngbTabTitle>Followers <span class="tag tag-primary tag-pill float-xs-right">{{user?.followerCount}}</span></template>
+        <template ngbTabContent>
+          <hr>
+          <user-card-list [source]="followers"></user-card-list>
+        </template>
+      </ngb-tab>
+      <ngb-tab title="Categories">
+        <template ngbTabContent>
+          <hr>
+          <category-list [source]="categories"></category-list>
+        </template>
+      </ngb-tab>
+    </ngb-tabset>
   </div>
 </div>
