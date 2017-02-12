@@ -1,22 +1,19 @@
-import { NgModule }      from '@angular/core';
-import { CommonModule }  from '@angular/common';
+import { ForgotPasswordComponent } from './forgot-password.component';
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { NgaModule } from '../../theme/nga.module';
-
 import { Register } from './register.component';
-import { routing }       from './register.routing';
-
-
 @NgModule({
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    FormsModule,
-    NgaModule,
-    routing
+    FormsModule, RouterModule
   ],
   declarations: [
-    Register
-  ]
+    Register,
+    ForgotPasswordComponent
+  ],
+  exports: [Register, ForgotPasswordComponent]
 })
-export default class RegisterModule {}
+export class RegisterModule { }

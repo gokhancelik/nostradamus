@@ -1,3 +1,4 @@
+import { RegisterModule } from './register/register.module';
 import { ComponentsModule } from './components/components.module';
 import { HomeModule } from './home/home.module';
 import { ProfileModule } from './profile/profile.module';
@@ -77,6 +78,7 @@ type StoreType = {
     AngularFireModule.initializeApp(FIREBASE_CONFIG, myFirebaseAuthConfig),
     NgbModule.forRoot(),
     LoginModule,
+    RegisterModule,
     ProfileModule,
     HomeModule,
     ComponentsModule,

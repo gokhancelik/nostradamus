@@ -2,20 +2,22 @@ import { User } from './../shared/models/user.model';
 import { Role } from './../shared/models/role.model';
 import { RoleService } from './../shared/services/role.service';
 import { CurrentUser } from './currentUser.model';
-import { Injectable } from '@angular/core';
+import { Injectable, Inject } from '@angular/core';
 import { Observable, Subject, BehaviorSubject } from 'rxjs/Rx';
 import {
     FirebaseAuth, FirebaseAuthState, AuthProviders,
-    AuthMethods, AngularFireDatabase
+    AuthMethods, AngularFireDatabase, FirebaseRef
 } from 'angularfire2/index';
 import { AuthInfo } from './auth.info';
 import { Router } from '@angular/router';
 
 @Injectable()
 export class AuthService {
+    fireauth: firebase.auth.Auth;
     constructor(private auth: FirebaseAuth,
-        private fDb: AngularFireDatabase,
+        private fDb: AngularFireDatabase, @Inject(FirebaseRef) fb,
         private router: Router) {
+        this.fireauth = fb.auth();
     }
     public register(email, password): Observable<FirebaseAuthState> {
         return this.fromFirebaseAuthPromise(this.auth.createUser(
@@ -31,6 +33,9 @@ export class AuthService {
                 provider: AuthProviders.Password,
                 method: AuthMethods.Password,
             }));
+    }
+    public resetPassword(email: string): Observable<void> {
+        return this.fromFirebaseAuthPromise(this.fireauth.sendPasswordResetEmail(email));
     }
     public loginWthFacebook(): Observable<FirebaseAuthState> {
         return this.fromFirebaseAuthPromise(this.auth.login({
