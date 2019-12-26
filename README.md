@@ -1,12 +1,12 @@
 # nostradamus
 Database connection string in app.module.ts
-export const FIREBASE_CONFIG = {
+`export const FIREBASE_CONFIG = {
   apiKey: '',
   authDomain: '',
   databaseURL: '',
   storageBucket: '',
   messagingSenderId: ''
-};
+};`
 you should change this.
 
 
