@@ -1,7 +1,7 @@
 # nostradamus
 Database connection string in app.module.ts
 `export const FIREBASE_CONFIG = {
-  apiKey: '',
+	apiKey: '',
   authDomain: '',
   databaseURL: '',
   storageBucket: '',
